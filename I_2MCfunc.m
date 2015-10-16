@@ -102,9 +102,9 @@ rrinterpwins = findInterpWins(data.right.X ,data.right.Y ,rrmiss ,p.windowtimeIn
 
 % Use Steffen interpolation and replace values
 fprintf('Replace interpolation windows with Steffen interpolation\n');
-[xpos,ypos,missingn]= windowedInterpolate(xpos         ,ypos         ,missing,  p.interpwins,p.edgeSampInterp);
-[llx ,lly ,llmiss]  = windowedInterpolate(data.left.X  ,data.left.Y  ,llmiss ,p.llinterpwins,p.edgeSampInterp);
-[rrx ,rry ,rrmiss]  = windowedInterpolate(data.right.X ,data.right.Y ,rrmiss ,p.rrinterpwins,p.edgeSampInterp);
+[xpos,ypos,missingn]= windowedInterpolate(xpos         ,ypos         ,missing,  interpwins,p.edgeSampInterp);
+[llx ,lly ,llmiss]  = windowedInterpolate(data.left.X  ,data.left.Y  ,llmiss ,llinterpwins,p.edgeSampInterp);
+[rrx ,rry ,rrmiss]  = windowedInterpolate(data.right.X ,data.right.Y ,rrmiss ,rrinterpwins,p.edgeSampInterp);
 
 %% CALCULATE 2-MEANS CLUSTERING FOR AVERAGED EYES
 
