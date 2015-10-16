@@ -1,10 +1,11 @@
-function [finalweights,stopped] = twoClusterWeighting2Variable(xpos,ypos,missing,downsamples,windowtime,steptime,freq,maxerrors)
+function [finalweights,stopped] = twoClusterWeighting2Variable(xpos,ypos,missing,downsamples,chebyOrder,windowtime,steptime,freq,maxerrors)
 % Calculates 2-means cluster weighting for eye-tracking data
 %
 % Input:
 % xpos,ypos                     = horizontal and vertical coordinates from eye-tracker over which to calculate 2-means clustering
 % missingn                      = boolean indicating which samples are missing
 % downsamples                   = downsample levels used for data (1/no downsampling is always done, don't specify that) 
+% chebyOrder                    = order of Chebyshev downsampling filter
 % windowtime                    = time window (s) over which to calculate 2-means clustering (choose value so that max. 1 saccade can occur)
 % steptime                      = time window (s) in each iteration. Use zero for sample by sample processing
 % freq                          = sampling frequency of data
@@ -37,7 +38,7 @@ assert(~any(mod(freq,downsamples)),'Some of your downsample levels are not divis
 rip = .05;	% passband ripple in dB
 [b,a,idxs] = deal(cell(1,nd));
 for p=1:nd
-    [b{p},a{p}] = cheby1(8, rip, .8/downsamples(p));
+    [b{p},a{p}] = cheby1(chebyOrder, rip, .8/downsamples(p));
     idxs{p}     = fliplr(nrsamples:-downsamples(p):1);
 end
 

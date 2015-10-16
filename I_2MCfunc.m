@@ -30,6 +30,10 @@ parser.addParameter('windowtime'        , 0.2 , @(x) validateattributes(x,{'nume
 parser.addParameter('steptime'          , 0.02, @(x) validateattributes(x,{'numeric'},{'scalar'}));
 % downsample levels (can be empty)
 parser.addParameter('downsamples'       , []  , @(x) validateattributes(x,{'numeric'},{'integer'}));
+% order of cheby1 Chebyshev downsampling filter, default is normally ok, as
+% long as there are 25 or more samples in the window (you may have less if
+% your data is of low sampling rate or your window is small
+parser.addParameter('chebyOrder'        , 8   , @(x) validateattributes(x,{'numeric'},{'integer'}));
 % maximum number of errors allowed in k-means clustering procedure before proceeding to next file
 parser.addParameter('maxerrors'         , 100 , @(x) validateattributes(x,{'numeric'},{'scalar','integer'}));
 % FIXATION DETERMINATION
@@ -110,7 +114,7 @@ fprintf('Replace interpolation windows with Steffen interpolation\n');
 
 % get kmeans-clustering for averaged signal
 fprintf('2-Means clustering started for averaged signal \n');
-[finalweights,stopped] = twoClusterWeighting2Variable(xpos,ypos,missingn,p.downsamples,p.windowtime,p.steptime,p.freq,p.maxerrors);
+[finalweights,stopped] = twoClusterWeighting2Variable(xpos,ypos,missingn,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
 
 % check whether clustering succeeded
 if stopped
@@ -121,7 +125,7 @@ end
 %% CALCULATE 2-MEANS CLUSTERING FOR SEPARATE EYES
 % get kmeans-clustering for left eye signal
 fprintf('2-Means clustering started for left eye signal \n');
-[finalweights_left,stopped] = twoClusterWeighting2Variable(llx,lly,llmiss,p.downsamples,p.windowtime,p.steptime,p.freq,p.maxerrors);
+[finalweights_left,stopped] = twoClusterWeighting2Variable(llx,lly,llmiss,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
 
 % check whether clustering succeeded
 if stopped
@@ -131,7 +135,7 @@ end
 
 % get kmeans-clustering for right eye signal
 fprintf('2-Means clustering started for right eye signal \n');
-[finalweights_right,stopped] = twoClusterWeighting2Variable(rrx,rry,rrmiss,p.downsamples,p.windowtime,p.steptime,p.freq,p.maxerrors);
+[finalweights_right,stopped] = twoClusterWeighting2Variable(rrx,rry,rrmiss,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
 
 % check whether clustering succeeded
 if stopped
