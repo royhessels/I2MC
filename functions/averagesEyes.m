@@ -14,9 +14,9 @@ if 0
     ypos(ly ~= missingy & ry == missingy) = ly(ly ~= missingy & ry == missingy);
     ypos(ly == missingy & ry == missingy) = missingy;
 else
-    % if x is missing, y is also always missing (and corolary also true)
-    qLMiss = lx == missingx;
-    qRMiss = rx == missingx;
+    % get missing
+    qLMiss = lx == missingx & ly == missingy;
+    qRMiss = rx == missingx & ry == missingy;
     qBMiss = qLMiss & qRMiss;
     
     q = ~qLMiss & ~qRMiss;
