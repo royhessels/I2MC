@@ -1,0 +1,6 @@
+*.asv
+.DS*
+~*.m
+*.swp
+*.bak
+/output/*
