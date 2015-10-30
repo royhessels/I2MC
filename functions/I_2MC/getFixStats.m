@@ -21,7 +21,7 @@ function [RMSxy,BCEA,rangeX,rangeY] = getFixStats(xpos,ypos,missing,fstart,fend,
     rangeX,...
     rangeY]      = deal(zeros(size(fstart)));
 
-for a=1:length(fix.start)
+for a=1:length(fstart)
     idxs = fstart(a):fend(a);
     % get data during fixation
     xposf = xpos(idxs);
