@@ -21,9 +21,10 @@ function [finalweights,stopped] = twoClusterWeighting2Variable(xpos,ypos,missing
 nrsamples =       round(windowtime/(1/freq));
 stepsize  = max(1,round(  steptime/(1/freq)));
 
-% create empty weights vectors
-totalweights = zeros([length(xpos) 1]);
-nrtests = zeros([length(xpos) 1]);
+% create empty weights vector
+totalweights = zeros(length(xpos), 1);
+totalweights(missing) = nan;
+nrtests      = zeros(length(xpos), 1);
 
 % stopped is always zero, unless maxiterations is exceeded. this
 % indicates that file could not be analysed after trying for x iterations
