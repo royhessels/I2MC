@@ -81,11 +81,22 @@ for p=1:length(missStart)
         continue;
     end
     
-    % check displacement
-    lesamps = missStart(p)-[1:edgesamples];
-    resamps = missEnd  (p)+[1:edgesamples];
-    if hypot(median(xpos(resamps))-median(xpos(lesamps)), median(ypos(resamps))-median(ypos(lesamps))) > maxdisp
-        qRemove(p) = true;
+    % check displacement, per missing interval
+    % we want to check per bit of missing, even if multiple bits got merged
+    % this as single data points can still anchor where the interpolation
+    % goes and we thus need to check distance per bit, not over the whole
+    % merged bit
+    idx = missStart(p) : missEnd(p);
+    [on,off] = bool2bounds(isnan(xpos(idx)));
+    for q=1:length(on)
+        lesamps = on (q)-[1:edgesamples]+missStart(p)-1;
+        resamps = off(q)+[1:edgesamples]+missStart(p)-1;
+        if hypot(nanmedian(xpos(resamps))-nanmedian(xpos(lesamps)), nanmedian(ypos(resamps))-nanmedian(ypos(lesamps))) > maxdisp
+            qRemove(p) = true;
+            break;
+        end
+    end
+    if qRemove(p)
         continue;
     end
 end
