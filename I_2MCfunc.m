@@ -1,10 +1,10 @@
-function fix = I_2MCfunc(data,p)
+function fix = I_2MCfunc(data,varargin)
 % ROY HESSELS - 2014
 
-% deal with inputs
+%% deal with inputs
 % define parser
 parser = inputParser;
-parser.FunctionName=mfilename;
+parser.FunctionName    = mfilename;
 parser.KeepUnmatched   = true;
 parser.PartialMatching = false;
 % required parameters:
@@ -15,7 +15,7 @@ parser.addParameter('missingx'      , [], @(x) validateattributes(x,{'numeric'},
 parser.addParameter('missingy'      , [], @(x) validateattributes(x,{'numeric'},{'scalar'}));
 parser.addParameter('scrSz'         , [], @(x) validateattributes(x,{'numeric'},{'numel',2}));
 parser.addParameter('disttoscreen'  , [], @(x) validateattributes(x,{'numeric'},{'scalar'}));
-% defaulted parameters:
+% parameters with defaults:
 % CUBIC SPLINE INTERPOLATION
 % max duration (s) of missing values for interpolation to occur
 parser.addParameter('windowtimeInterp'  , 0.1 , @(x) validateattributes(x,{'numeric'},{'scalar'}));
@@ -47,8 +47,12 @@ parser.addParameter('maxMergeTime'      , 30  , @(x) validateattributes(x,{'nume
 parser.addParameter('minFixDur'         , 40  , @(x) validateattributes(x,{'numeric'},{'scalar'}));
 
 % get inputs the user specified and throw them in the parser
-p = reshape([fieldnames(p) struct2cell(p)].',1,[]);
-parse(parser,p{:});
+if isstruct(varargin{1})
+    % convert to key-value pairs
+    assert(isscalar(varargin),'only one input for options is expected if options are given as a struct')
+    varargin = reshape([fieldnames(varargin{1}) struct2cell(varargin{1})].',1,[]);
+end
+parse(parser,varargin{:});
 p = parser.Results;
 
 % deal nicely with unmatched
@@ -58,12 +62,7 @@ if ~isempty(unmatched)
     for q=1:length(unmatched)
         msg = [msg sprintf('  %s: %s\n',unmatched{q},Var2Str(parser.Unmatched.(unmatched{q})))];
     end
-    msg = [msg sprintf('\nValid recognizable parameter')];
-    if isscalar(parser.Parameters)
-        msg = [msg sprintf(' is:\n  ')];
-    else
-        msg = [msg sprintf('s are:\n  ')];
-    end
+    msg = [msg sprintf('\nValid recognizable parameters are:\n  ')];
     msg = [msg strjoin(parser.Parameters,sprintf('\n  '))];
         
     ME = MException(sprintf('%s:InputError',mfilename),msg);
