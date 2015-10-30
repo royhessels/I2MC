@@ -84,7 +84,7 @@ if isempty(p.maxdisp)
     p.maxdisp               = p.xres*0.2*sqrt(2); % maximum displacement during missing for interpolation to be possible
 end
 
-% SETUP VISUAL ANGLE STUFF
+% setup visual angle conversion
 pixpercm                    = mean([p.xres p.yres]./p.scrSz(:).');
 rad2deg                     = @(x) x/pi*180;
 degpercm                    = 2*rad2deg(atan(1/(2*p.disttoscreen)));
@@ -95,7 +95,7 @@ pixperdeg                   = pixpercm/degpercm;
 %% CREATE AVERAGE OVER TWO EYES
 [xpos, ypos, missing, llmiss, rrmiss] = averagesEyes(data.left.X,data.right.X,p.missingx,data.left.Y,data.right.Y,p.missingy);
 
-%% CUBIC SPLINE INTERPOLATION
+%% INTERPOLATION
 
 % get interpolation windows for average and individual eye signals
 fprintf('Searching for valid interpolation windows\n');
@@ -147,5 +147,6 @@ finalweights_avg = nanmean([finalweights finalweights_left finalweights_right],2
 
 %% DETERMINE FIXATIONS BASED ON FINALWEIGHTS_AVG
 fprintf('Determining fixations based on clustering weight mean for averaged signal and separate eyes + 2*std \n')
-[fix.cutoff,fix.startT,fix.endT,fix.dur,fix.xpos,fix.ypos,fix.flankdataloss,fix.fracinterped,fix.RMSxy,fix.BCEA,fix.fixRangeX,fix.fixRangeY] = getFixations(finalweights_avg,missing,xpos,ypos,data.time,p.cutoffstd,pixperdeg,p.maxMergeDist,p.maxMergeTime,p.minFixDur);
+[fix.cutoff,fix.start,fix.end,fix.startT,fix.endT,fix.dur,fix.xpos,fix.ypos,fix.flankdataloss,fix.fracinterped] = getFixations(finalweights_avg,data.time,xpos,ypos,missing,p.cutoffstd,p.maxMergeDist,p.maxMergeTime,p.minFixDur);
+[fix.RMSxy,fix.BCEA,fix.fixRangeX,fix.fixRangeY] = getFixStats(xpos,ypos,missing,fix.start,fix.end,pixperdeg);
         
