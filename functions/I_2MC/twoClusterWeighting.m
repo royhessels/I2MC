@@ -1,4 +1,4 @@
-function [finalweights,stopped] = twoClusterWeighting2Variable(xpos,ypos,missing,downsamples,chebyOrder,windowtime,steptime,freq,maxerrors)
+function [finalweights,stopped] = twoClusterWeighting(xpos,ypos,missing,downsamples,chebyOrder,windowtime,steptime,freq,maxerrors)
 % Calculates 2-means cluster weighting for eye-tracking data
 %
 % Input:

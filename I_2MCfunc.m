@@ -113,7 +113,7 @@ fprintf('Replace interpolation windows with Steffen interpolation\n');
 
 % get kmeans-clustering for averaged signal
 fprintf('2-Means clustering started for averaged signal \n');
-[finalweights,stopped] = twoClusterWeighting2Variable(xpos,ypos,missingn,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
+[finalweights,stopped] = twoClusterWeighting(xpos,ypos,missingn,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
 
 % check whether clustering succeeded
 if stopped
@@ -124,7 +124,7 @@ end
 %% CALCULATE 2-MEANS CLUSTERING FOR SEPARATE EYES
 % get kmeans-clustering for left eye signal
 fprintf('2-Means clustering started for left eye signal \n');
-[finalweights_left,stopped] = twoClusterWeighting2Variable(llx,lly,llmiss,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
+[finalweights_left,stopped] = twoClusterWeighting(llx,lly,llmiss,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
 
 % check whether clustering succeeded
 if stopped
@@ -134,7 +134,7 @@ end
 
 % get kmeans-clustering for right eye signal
 fprintf('2-Means clustering started for right eye signal \n');
-[finalweights_right,stopped] = twoClusterWeighting2Variable(rrx,rry,rrmiss,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
+[finalweights_right,stopped] = twoClusterWeighting(rrx,rry,rrmiss,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
 
 % check whether clustering succeeded
 if stopped
