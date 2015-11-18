@@ -1,4 +1,4 @@
-function [xpos, ypos, qBMiss, qLMiss, qRMiss, varargout] = averagesEyes(lx,rx,missingx,ly,ry,missingy,varargin)
+function [xpos, ypos, qBMiss, qLMiss, qRMiss, varargout] = averageEyes(lx,rx,missingx,ly,ry,missingy,varargin)
 % Averages data from two eyes. Take one eye if only one was found.
 
 assert(mod(length(varargin),2)==0,'if extra variables given, must be a pair for left and right eye')
@@ -11,8 +11,8 @@ for p=1:2:length(varargin)
 end
 
 % get missing
-qLMiss = lx == missingx & ly == missingy;
-qRMiss = rx == missingx & ry == missingy;
+qLMiss = (lx == missingx | isnan(lx)) & (ly == missingy | isnan(ly));
+qRMiss = (rx == missingx | isnan(rx)) & (ry == missingy | isnan(ry));
 qBMiss = qLMiss & qRMiss;
 
 q = ~qLMiss & ~qRMiss;
@@ -36,8 +36,8 @@ for p=1:2:length(varargin)
     varargout{(p+1)/2} = varargin{p}(q);
 end
 
-xpos(qBMiss) = missingx;
-ypos(qBMiss) = missingy;
+xpos(qBMiss) = nan;
+ypos(qBMiss) = nan;
 for p=1:2:length(varargin)
     varargout{(p+1)/2} = nan;
 end

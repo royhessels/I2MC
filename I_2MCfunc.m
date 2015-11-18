@@ -1,4 +1,4 @@
-function fix = I_2MCfunc(data,varargin)
+function [fix,data,p] = I_2MCfunc(data,varargin)
 % ROY HESSELS - 2014
 
 %% deal with inputs
@@ -93,60 +93,84 @@ pixperdeg                   = pixpercm/degpercm;
 %% START ALGORITHM
 
 %% CREATE AVERAGE OVER TWO EYES
-[xpos, ypos, missing, llmiss, rrmiss] = averagesEyes(data.left.X,data.right.X,p.missingx,data.left.Y,data.right.Y,p.missingy);
+% deal with monocular data
+if ~isfield(data,'right')
+    xpos = data.left.X;
+    ypos = data.left.Y;
+    missing = isnan(data.left.X) | data.left.X==p.missingx | isnan(data.left.Y) | data.left.Y==p.missingy;
+    q2Eyes = false;
+elseif ~isfield(data,'left')
+    xpos = data.right.X;
+    ypos = data.right.Y;
+    missing = isnan(data.right.X) | data.right.X==p.missingx | isnan(data.right.Y) | data.right.Y==p.missingy;
+    q2Eyes = false;
+else
+    [data.average.X, data.average.Y, missing, llmiss, rrmiss] = averageEyes(data.left.X,data.right.X,p.missingx,data.left.Y,data.right.Y,p.missingy);
+    xpos = data.average.X;
+    ypos = data.average.Y;
+    q2Eyes = true;
+end
 
 %% INTERPOLATION
 
 % get interpolation windows for average and individual eye signals
 fprintf('Searching for valid interpolation windows\n');
 interpwins   = findInterpWins(xpos         ,ypos         ,missing,p.windowtimeInterp,p.edgeSampInterp,p.freq,p.maxdisp);
-llinterpwins = findInterpWins(data.left.X  ,data.left.Y  ,llmiss ,p.windowtimeInterp,p.edgeSampInterp,p.freq,p.maxdisp);
-rrinterpwins = findInterpWins(data.right.X ,data.right.Y ,rrmiss ,p.windowtimeInterp,p.edgeSampInterp,p.freq,p.maxdisp);
+if q2Eyes
+    llinterpwins = findInterpWins(data.left.X  ,data.left.Y  ,llmiss ,p.windowtimeInterp,p.edgeSampInterp,p.freq,p.maxdisp);
+    rrinterpwins = findInterpWins(data.right.X ,data.right.Y ,rrmiss ,p.windowtimeInterp,p.edgeSampInterp,p.freq,p.maxdisp);
+end
 
 % Use Steffen interpolation and replace values
 fprintf('Replace interpolation windows with Steffen interpolation\n');
 [xpos,ypos,missingn]= windowedInterpolate(xpos         ,ypos         ,missing,  interpwins,p.edgeSampInterp);
-[llx ,lly ,llmiss]  = windowedInterpolate(data.left.X  ,data.left.Y  ,llmiss ,llinterpwins,p.edgeSampInterp);
-[rrx ,rry ,rrmiss]  = windowedInterpolate(data.right.X ,data.right.Y ,rrmiss ,rrinterpwins,p.edgeSampInterp);
-
-%% CALCULATE 2-MEANS CLUSTERING FOR AVERAGED EYES
-
-% get kmeans-clustering for averaged signal
-fprintf('2-Means clustering started for averaged signal \n');
-[finalweights,stopped] = twoClusterWeighting(xpos,ypos,missingn,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
-
-% check whether clustering succeeded
-if stopped
-    fprintf('Clustering stopped after exceeding max errors, continuing to next file \n');
-    return
+if q2Eyes
+    [llx ,lly ,llmiss]  = windowedInterpolate(data.left.X  ,data.left.Y  ,llmiss ,llinterpwins,p.edgeSampInterp);
+    [rrx ,rry ,rrmiss]  = windowedInterpolate(data.right.X ,data.right.Y ,rrmiss ,rrinterpwins,p.edgeSampInterp);
 end
 
-%% CALCULATE 2-MEANS CLUSTERING FOR SEPARATE EYES
-% get kmeans-clustering for left eye signal
-fprintf('2-Means clustering started for left eye signal \n');
-[finalweights_left,stopped] = twoClusterWeighting(llx,lly,llmiss,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
 
-% check whether clustering succeeded
-if stopped
-    fprintf('Clustering stopped after exceeding max errors, continuing to next file \n');
-    return
+if ~q2Eyes
+    %% CALCULATE 2-MEANS CLUSTERING FOR SINGLE EYE
+    
+    % get kmeans-clustering for averaged signal
+    fprintf('2-Means clustering started for averaged signal \n');
+    [data.finalweights,stopped] = twoClusterWeighting(xpos,ypos,missingn,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
+    
+    % check whether clustering succeeded
+    if stopped
+        fprintf('Clustering stopped after exceeding max errors, continuing to next file \n');
+        return
+    end
+    
+    %% CALCULATE 2-MEANS CLUSTERING FOR SEPARATE EYES
+elseif q2Eyes
+    % get kmeans-clustering for left eye signal
+    fprintf('2-Means clustering started for left eye signal \n');
+    [finalweights_left,stopped] = twoClusterWeighting(llx,lly,llmiss,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
+    
+    % check whether clustering succeeded
+    if stopped
+        fprintf('Clustering stopped after exceeding max errors, continuing to next file \n');
+        return
+    end
+    
+    % get kmeans-clustering for right eye signal
+    fprintf('2-Means clustering started for right eye signal \n');
+    [finalweights_right,stopped] = twoClusterWeighting(rrx,rry,rrmiss,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
+    
+    % check whether clustering succeeded
+    if stopped
+        fprintf('Clustering stopped after exceeding max errors, continuing to next file \n');
+        return
+    end
+    
+    %% AVERAGE FINALWEIGHTS OVER COMBINED & SEPARATE EYES
+    data.finalweights = nanmean([finalweights_left finalweights_right],2);
 end
-
-% get kmeans-clustering for right eye signal
-fprintf('2-Means clustering started for right eye signal \n');
-[finalweights_right,stopped] = twoClusterWeighting(rrx,rry,rrmiss,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
-
-% check whether clustering succeeded
-if stopped
-    fprintf('Clustering stopped after exceeding max errors, continuing to next file \n');
-    return
-end
-
-%% AVERAGE FINALWEIGHTS OVER COMBINED & SEPARATE EYES
-finalweights_avg = nanmean([finalweights finalweights_left finalweights_right],2);
 
 %% DETERMINE FIXATIONS BASED ON FINALWEIGHTS_AVG
 fprintf('Determining fixations based on clustering weight mean for averaged signal and separate eyes + 2*std \n')
-[fix.cutoff,fix.start,fix.end,fix.startT,fix.endT,fix.dur,fix.xpos,fix.ypos,fix.flankdataloss,fix.fracinterped] = getFixations(finalweights_avg,data.time,xpos,ypos,missing,p.cutoffstd,p.maxMergeDist,p.maxMergeTime,p.minFixDur);
+[fix.cutoff,fix.start,fix.end,fix.startT,fix.endT,fix.dur,fix.xpos,fix.ypos,fix.flankdataloss,fix.fracinterped] = getFixations(data.finalweights,data.time,xpos,ypos,missing,p.cutoffstd,p.maxMergeDist,p.maxMergeTime,p.minFixDur);
 [fix.RMSxy,fix.BCEA,fix.fixRangeX,fix.fixRangeY] = getFixStats(xpos,ypos,missing,fix.start,fix.end,pixperdeg);
         
