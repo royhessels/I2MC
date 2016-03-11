@@ -35,7 +35,8 @@ counterrors = 0;
 nd = length(downsamples);
 assert(~any(mod(freq,downsamples)),'Some of your downsample levels are not divisors of your sampling frequency')
 
-% filter signal. Decimate first does a chebychev filter as specified below
+% filter signal. Follow the lead of decimate(), which first runs a
+% Chebychev filter as specified below
 rip = .05;	% passband ripple in dB
 [b,a,idxs] = deal(cell(1,nd));
 for p=1:nd
@@ -88,7 +89,7 @@ while eind<=length(xpos)
     [ll_d,IDL_d] = deal(cell(1,nd+1));
     ll_d{1} = [xpos(idx) ypos(idx)];
     
-    % the filtering done in decimate is done once above. now we simply need
+    % Filter the bit of data we're about to downsample. Then we simply need
     % to select each nth sample where n is the integer factor by which
     % number of samples is reduced. select samples such that they are till
     % end of window

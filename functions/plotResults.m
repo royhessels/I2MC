@@ -1,112 +1,67 @@
-fprintf('Plotting results \n');
+function plotResults(data,fix,filename,res)
+
+
+Xdat = [];
+Ydat = [];
+klr  = {};
+if isfield(data,'left')
+    Xdat = [Xdat data.left.X(:)];
+    Ydat = [Ydat data.left.Y(:)];
+    klr = [klr {'g'}];
+end
+if isfield(data,'right')
+    Xdat = [Xdat data.right.X(:)];
+    Ydat = [Ydat data.right.Y(:)];
+    klr = [klr {'r'}];
+end
+if isfield(data,'average') && ~isfield(data,'left') && ~isfield(data,'right')
+    Xdat = [Xdat data.average.X(:)];
+    Ydat = [Ydat data.average.Y(:)];
+    klr = [klr {'b'}];
+end
+    
 
 hf = figure(1);
-set(hf,'Position',[0 0 1920 1080])
+set(hf,'Position',[res(1)/4 res(2)/4 res(1)/2 res(2)/2])
 
-h1 = subplot(3,3,1);
-plot(llx,'b-');
-title('Horizontal coordinate -  no processing');
-hold on
-plot(rrx,'r-');
-hold off
-axis([0 length(llx) 0 xres]);
+%% plot layout
 
-h4 = subplot(3,3,4);
-plot(lly,'b-');
-title('Vertical coordinate -  no processing');
-hold on
-plot(rry,'r-');
-hold off
-axis([0 length(lly) 0 yres]);
+myfontsize = 12;
+fixlinewidth = 2;
 
-% plot xpos, ypos, finalweights
-h2 = subplot(3,3,2);
-plot(xpos)
-title('Horizontal coordinate -  averaged, interpolated, fixations marked');
-axis([0 length(xpos) 0 xres]);
-
+h1 = subplot(2,1,1); hold on
+for p=1:size(Xdat,2)
+    plot(data.time,Xdat(:,p),[klr{p} '-']);
+end
 % add fixations
-hold on
-for b = 1:length(fixstart)
-    plot([fixstart(b):1:fixend(b)],repmat(xmedian(b),1,length(fixstart(b):1:fixend(b))),'r-','LineWidth',2);
+for b = 1:length(fix.startT)
+    plot([fix.startT(b) fix.endT(b)],[fix.xpos(b) fix.xpos(b)],'k-','LineWidth',fixlinewidth);
 end
 hold off
+ylabel('Horizontal position (pixels)','FontSize',myfontsize);
+axis([0 data.time(end) 0 res(1)]);
 
-h5 = subplot(3,3,5);
-plot(ypos)
-title('Vertical coordinate -  averaged, interpolated, fixations marked');
-axis([0 length(ypos) 0 yres]);
 
+h2 = subplot(2,1,2); hold on
+for p=1:size(Ydat,2)
+    plot(data.time,Ydat(:,p),[klr{p} '-']);
+end
 % add fixations
-hold on
-for b = 1:length(fixstart)
-    plot([fixstart(b):1:fixend(b)],repmat(ymedian(b),1,length(fixstart(b):1:fixend(b))),'r-','LineWidth',2);
+for b = 1:length(fix.startT)
+    plot([fix.startT(b) fix.endT(b)],[fix.ypos(b) fix.ypos(b)],'k-','LineWidth',fixlinewidth);
 end
 hold off
-
-h8 = subplot(3,3,8);
-plot(finalweights)
-title('2-means clustering weights based on averaged and separate eyes - cutoff for fixations in red');
-axis([0 length(finalweights) 0 4]);
-
-% add fixations
-hold on
-for b = 1:length(fixstart)
-    plot([fixstart(b):1:fixend(b)],repmat(cutoff,1,length(fixstart(b):1:fixend(b))),'r-','LineWidth',2);
-end
-hold off
-
-% ADD SUMMED FINALWEIGHTS TO CHECK WHETHER IT DIFFERS
-% plot xpos, ypos, finalweights
-h3 = subplot(3,3,3);
-plot(xpos)
-title('Horizontal coordinate -  averaged, interpolated, fixations marked');
-axis([0 length(xpos) 0 xres]);
-
-% add fixations
-hold on
-for b = 1:length(fixstart2)
-    plot([fixstart2(b):1:fixend2(b)],repmat(xmedian2(b),1,length(fixstart2(b):1:fixend2(b))),'r-','LineWidth',2);
-end
-hold off
-
-h6 = subplot(3,3,6);
-plot(ypos)
-title('Vertical coordinate -  averaged, interpolated, fixations marked');
-axis([0 length(ypos) 0 yres]);
-
-% add fixations
-hold on
-for b = 1:length(fixstart2)
-    plot([fixstart2(b):1:fixend2(b)],repmat(ymedian2(b),1,length(fixstart2(b):1:fixend2(b))),'r-','LineWidth',2);
-end
-hold off
-
-h9 = subplot(3,3,9);
-plot(finalweights_avg)
-title('2-means clustering weights based on averaged eyes only - cutoff for fixations in red');
-axis([0 length(finalweights_avg) 0 4]);
-
-% add fixations
-hold on
-for b = 1:length(fixstart2)
-    plot([fixstart2(b):1:fixend2(b)],repmat(cutoff2,1,length(fixstart2(b):1:fixend2(b))),'r-','LineWidth',2);
-end
-hold off
+ylabel('Vertical position (pixels)','FontSize',myfontsize);
+xlabel('Time (ms)','FontSize',myfontsize);
+axis([0 data.time(end) 0 res(2)]);
 
 % link all x axes so zoom (change x limits) on one leads to same new x
 % limits for all other ones
-linkaxes([h1 h2 h3 h4 h5 h6 h8 h9],'x');
-% en nu de truuc, we willen ook de ylims aan elkaar hangen, maar per kolom
-% los. Twee keer linkaxes aanroepen werkt niet omdat dan het effect van
-% eerdere aanroepen teniet wordt gedaan. Met linkprop kunnen we veel meer..
-lnkObj1 = linkprop([h1 h2 h3], 'YLim'); % the link object (return value) 'must exist within the context where you want property linking to occur"
-lnkObj2 = linkprop([h4 h5 h6], 'YLim');
-lnkObj3 = linkprop([h8 h9], 'YLim');
+linkaxes([h1 h2],'x');
 
-% save and close
+%% save and close
 set(hf,'PaperPositionMode','auto');
 drawnow;
-% pause
-print('-depsc2',savefile);
+% pause;
+print(filename,'-dpng','-r300');
 close(hf);

@@ -1,4 +1,4 @@
-function [fix,data,p] = I_2MCfunc(data,varargin)
+function [fix,data,p] = I2MCfunc(data,varargin)
 % ROY HESSELS - 2014
 
 %% deal with inputs
@@ -29,7 +29,7 @@ parser.addParameter('windowtime'        , 0.2 , @(x) validateattributes(x,{'nume
 % time window shift (s) for each iteration. Use zero for sample by sample processing
 parser.addParameter('steptime'          , 0.02, @(x) validateattributes(x,{'numeric'},{'scalar'}));
 % downsample levels (can be empty)
-parser.addParameter('downsamples'       , []  , @(x) validateattributes(x,{'numeric'},{'integer'}));
+parser.addParameter('downsamples'       , [2 5 10], @(x) validateattributes(x,{'numeric'},{'integer'}));
 % order of cheby1 Chebyshev downsampling filter, default is normally ok, as
 % long as there are 25 or more samples in the window (you may have less if
 % your data is of low sampling rate or your window is small
@@ -50,7 +50,7 @@ parser.addParameter('minFixDur'         , 40  , @(x) validateattributes(x,{'nume
 if isstruct(varargin{1})
     % convert to key-value pairs
     assert(isscalar(varargin),'only one input for options is expected if options are given as a struct')
-    varargin = reshape([fieldnames(varargin{1}) struct2cell(varargin{1})].',1,[]);
+    varargin = [reshape([fieldnames(varargin{1}) struct2cell(varargin{1})].',1,[]) varargin(2:end)];
 end
 parse(parser,varargin{:});
 p = parser.Results;
@@ -94,17 +94,22 @@ pixperdeg                   = pixpercm/degpercm;
 
 %% CREATE AVERAGE OVER TWO EYES
 % deal with monocular data
-if ~isfield(data,'right')
+if isfield(data,'left') && ~isfield(data,'right')
     xpos = data.left.X;
     ypos = data.left.Y;
     missing = isnan(data.left.X) | data.left.X==p.missingx | isnan(data.left.Y) | data.left.Y==p.missingy;
     q2Eyes = false;
-elseif ~isfield(data,'left')
+elseif isfield(data,'right') && ~isfield(data,'left')
     xpos = data.right.X;
     ypos = data.right.Y;
     missing = isnan(data.right.X) | data.right.X==p.missingx | isnan(data.right.Y) | data.right.Y==p.missingy;
     q2Eyes = false;
-else
+elseif isfield(data,'average')
+    xpos = data.average.X;
+    ypos = data.average.Y;
+    missing = isnan(data.avg.X) | data.avg.X==p.missingx | isnan(data.avg.Y) | data.avg.Y==p.missingy;
+    q2Eyes = isfield(data,'right') && isfield(data,'left');
+else % we have left and right, average them
     [data.average.X, data.average.Y, missing, llmiss, rrmiss] = averageEyes(data.left.X,data.right.X,p.missingx,data.left.Y,data.right.Y,p.missingy);
     xpos = data.average.X;
     ypos = data.average.Y;

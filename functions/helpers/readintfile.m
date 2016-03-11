@@ -1,9 +1,8 @@
 function [list] = readintfile(name, nskip, cols)
 
-% Deze functie leest tabgescheiden kolom text files
-% de getallen worden naar float geconverteerd
-% het gaat mis als de file andere dingen dan getallen bevat
-% alleen Nan (not a number) en inf worden geaccepteerd
+% This function reads tab-delimited textfiles. Numbers are converted to
+% float. It will not work if anything else than numbers, NaN or Inf are
+% included in the file.
 
 fid         = fopen(name,'rt');
 for p=1:nskip
