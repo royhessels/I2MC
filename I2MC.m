@@ -30,6 +30,8 @@
 % available you may set opt.downsample to []. This may, however, degrade
 % performance of the algorithm.
 
+% Tested on MATLAB R2014b & R2015b
+
 %% INITIALIZE
 clear variables; clear mex; close all; fclose('all'); clc;
 dbstop if error;
@@ -139,6 +141,9 @@ for e = 1:nfold
             plotResults(data,fix,savefile,[opt.xres opt.yres]);
         end
         
+        for g=1:numel(fix.start)
+            fprintf(fid,'%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%s\t%s\n',[fix.start(g) fix.end(g) fix.dur(g) fix.xpos(g) fix.ypos(g) fix.flankdataloss(g) fix.fracinterped(g) fix.cutoff, fix.RMSxy(g), fix.BCEA(g), fix.fixRangeX(g), fix.fixRangeY(g)],fold(e).name,file(f).name(1:end-4));
+        end
     end
 end
 
