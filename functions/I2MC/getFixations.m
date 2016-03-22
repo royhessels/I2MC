@@ -47,7 +47,7 @@ fixbool = finalweights < cutoff;
 starttime   = timestamp(fixstart);
 endtime     = timestamp(fixend);
 
-%% loop over all fixations in trial, see if should be merged
+%% loop over all fixation candidates in trial, see if should be merged
 for p=length(starttime):-1:2
     % get median coordinates of fixation
     xmedThis = median(xpos(fixstart(p):fixend(p)));
@@ -56,6 +56,10 @@ for p=length(starttime):-1:2
     ymedPrev = median(ypos(fixstart(p-1):fixend(p-1)));
     % check if fixations close enough in time and space and thus qualify
     % for merging
+    % The interval between the two fixations is calculated correctly (see
+    % notes about fixation duration below), i checked this carefully. (Both
+    % start and end of the interval are shifted by one sample in time, but
+    % assuming practicalyl constant sample interval, thats not an issue.)
     if starttime(p)-endtime(p-1)<maxMergeTime && hypot(xmedThis-xmedPrev,ymedThis-ymedPrev) < maxMergeDist
         % merge
         fixend(p-1) = fixend(p);
@@ -68,9 +72,9 @@ for p=length(starttime):-1:2
     end
 end
 
-%%  beginning and end of fixation must be real data, not interpolated. If 
-% interpolated, those bit(s) at the edge(s) is excluded from the fixation
-% first throw out fixations that are all missing/interpolated
+%% beginning and end of fixation must be real data, not interpolated.
+% If interpolated, those bit(s) at the edge(s) is excluded from the
+% fixation first throw out fixations that are all missing/interpolated
 for p=length(starttime):-1:1
     if all(missing(fixstart(p):fixend(p)))
         fixstart(p) = [];
@@ -91,9 +95,25 @@ for p=1:length(starttime)
     end
 end
 
-
-%% check if any too short
+%% caluclate fixation duration
+% if you calculate fixation duration by means of time of last sample during
+% fixation minus time of first sample during fixation (our fixation markers
+% are inclusive), then you always underestimate fixation duration by one
+% sample because you're in practice counting to the beginning of the
+% sample, not the end of it. To solve this, as end time we need to take the
+% timestamp of the sample that is one past the last sample of the fixation.
+% so, first get new end time
+endtime     = timestamp(min(fixend+1,length(timestamp))); % make sure we don't run off the end of the data
+% if last fixation ends at end of data, we need to make up how long that
+% sample is and add that to the end time
+if fixend(end)==length(timestamp)
+    endtime(end) = endtime(end) + diff(timestamp(end-1:end));
+end
+% now calculate fixation duration correctly.
 fixdur      = endtime-starttime;
+
+
+%% check if any fixations are too short
 qTooShort   = fixdur<minFixDur;
 fixstart(qTooShort) = [];
 fixend(qTooShort)   = [];
