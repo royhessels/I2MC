@@ -18,13 +18,22 @@
 
 % Quick start guide for adopting this script for your own data:
 % 1) Build an import function specific for your data (see importTobiiTX300
-% for an example).
-% 2) Change line 106 to use your new import function.
-% 3) For monocular data use data.left or data.right on line 122-123. 
-% For binocular data use data.right & data.left on line 118-121. You may
-% use data.average if you only have the average.
-% 4) Adjust the necessary variables to match your data
-% 5) Run the algorithm
+% for an example). 
+
+% 2) Change line 106 to use your new import function. The format should be:
+%
+% data.time for the timestamp
+% data.left.X & data.left.Y for left gaze coordinates
+% data.right.X & data.right.Y for right gaze coordinates
+% data.average.X & data.average.Y for average gaze coordinates
+% 
+% You may provide coordinates from both eyes, only the left, only the
+% right, or only the average.
+% Gaze coordinates should be in pixels, timestamps should be in milliseconds
+
+% 3) Adjust the variables in the "necessary variables" section to match your
+%    data
+% 4) Run the algorithm
 
 % Requirements: Signal Processing Toolbox for downsampling. If not
 % available you may set opt.downsample to []. This may, however, degrade
@@ -47,6 +56,8 @@ opt.missingy                    = -opt.yres; % missing value for vertical positi
 opt.freq                        = 300; % sampling frequency of data (check that this value matches with values actually obtained from measurement!)
 
 % Variables for the calculation of visual angle
+% These values are used to calculate noise measures (RMS and BCEA) of
+% fixations. The may be left as is, but don't use the noise measures then.
 opt.scrSz                       = [50.9174 28.6411]; % screen size in cm
 opt.disttoscreen                = 65; % distance to screen in cm.
 
@@ -65,7 +76,7 @@ do.plots                        = 1; % if set to 1, plot of fixation detection f
 % algorithm. Do this only if you know what you're doing. Uncomment the
 % settings below and run the algorithm.
 
-% % CUBIC SPLINE INTERPOLATION
+% % STEFFEN INTERPOLATION
 % opt.windowtimeInterp            = 0.1;  % max duration (s) of missing values for interpolation to occur
 % opt.edgeSampInterp              = 2;    % amount of data (number of samples) at edges needed for interpolation
 % opt.maxdisp                     = opt.xres*0.2*sqrt(2); % maximum displacement during missing for interpolation to be possible
@@ -115,22 +126,15 @@ for e = 1:nfold
         %% IMPORT DATA
         fprintf('Importing and processing %s/%s \n',fold(e).name,file(f).name)
         
-        [timestamp,llx,lly,rrx,rry] = importTobiiTX300(fullfile(folders.data,fold(e).name,file(f).name),1,[opt.xres opt.yres],opt.missingx,opt.missingy);
+        [data.time,data.left.X,data.left.Y,data.right.X,data.right.Y] = importTobiiTX300(fullfile(folders.data,fold(e).name,file(f).name),1,[opt.xres opt.yres],opt.missingx,opt.missingy);
         
         % check whether we have data, if not, continue to next file
-        if isempty(timestamp)
+        if isempty(data.time)
             fprintf('Empty file encountered, continuing to next file \n');
             continue
         end
         
         %% RUN FIXATION DETECTION
-        data.time    = timestamp;
-        data.left.X  = llx;
-        data.left.Y  = lly;
-        data.right.X = rrx;
-        data.right.Y = rry;
-        % data.average.X = ;
-        % data.average.Y = ;
         fix          = I2MCfunc(data,opt);
         
         %% PLOT RESULTS
@@ -142,7 +146,7 @@ for e = 1:nfold
         end
         
         for g=1:numel(fix.start)
-            fprintf(fid,'%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%s\t%s\n',[fix.start(g) fix.end(g) fix.dur(g) fix.xpos(g) fix.ypos(g) fix.flankdataloss(g) fix.fracinterped(g) fix.cutoff, fix.RMSxy(g), fix.BCEA(g), fix.fixRangeX(g), fix.fixRangeY(g)],fold(e).name,file(f).name(1:end-4));
+            fprintf(fid,'%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%s\t%s\n',[fix.startT(g) fix.endT(g) fix.dur(g) fix.xpos(g) fix.ypos(g) fix.flankdataloss(g) fix.fracinterped(g) fix.cutoff, fix.RMSxy(g), fix.BCEA(g), fix.fixRangeX(g), fix.fixRangeY(g)],fold(e).name,file(f).name(1:end-4));
         end
     end
 end
