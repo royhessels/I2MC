@@ -106,7 +106,7 @@ end
 endtime     = timestamp(min(fixend+1,length(timestamp))); % make sure we don't run off the end of the data
 % if last fixation ends at end of data, we need to make up how long that
 % sample is and add that to the end time
-if fixend(end)==length(timestamp)
+if ~isempty(fixend) && fixend(end)==length(timestamp)   % first check if there are fixations in the first place, or we'll index into non-existing data
     endtime(end) = endtime(end) + diff(timestamp(end-1:end));
 end
 % now calculate fixation duration correctly.
