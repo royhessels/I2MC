@@ -71,7 +71,7 @@ end
 
 % deal with required options
 % if empty, user did not specify these
-checkFun = @(opt,str) assert(~isempty(p.(opt)),'I_2MCfunc: %s must be specified using the ''%s'' option',str,opt);
+checkFun = @(opt,str) assert(~isempty(p.(opt)),'I2MCfunc: %s must be specified using the ''%s'' option',str,opt);
 checkFun('xres', 'horizontal screen resolution')
 checkFun('yres',   'vertical screen resolution')
 checkFun('freq', 'tracker sampling rate')
