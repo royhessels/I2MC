@@ -94,8 +94,8 @@ pixperdeg                   = pixpercm/degpercm;
 
 %% START ALGORITHM
 
-%% CREATE AVERAGE OVER TWO EYES
-% deal with monocular data
+%% PREPARE INPUT DATA
+% deal with monocular data, or create average over two eyes
 if isfield(data,'left') && ~isfield(data,'right')
     xpos = data.left.X;
     ypos = data.left.Y;
@@ -111,6 +111,11 @@ elseif isfield(data,'average')
     ypos = data.average.Y;
     missing = isnan(data.average.X) | data.average.X==par.missingx | isnan(data.average.Y) | data.average.Y==par.missingy;
     q2Eyes = isfield(data,'right') && isfield(data,'left');
+    if q2Eyes
+        % we have left and right and average already provided, but we need
+        % to get missing in the individual eye signals
+        [llmiss, rrmiss] = getMissing(data.left.X,data.right.X,par.missingx,data.left.Y,data.right.Y,par.missingy);
+    end
 else % we have left and right, average them
     [data.average.X, data.average.Y, missing, llmiss, rrmiss] = averageEyes(data.left.X,data.right.X,par.missingx,data.left.Y,data.right.Y,par.missingy);
     xpos = data.average.X;
