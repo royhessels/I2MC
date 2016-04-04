@@ -64,7 +64,7 @@ opt.disttoscreen                = 65; % distance to screen in cm.
 % Folders
 % Data folder should be structured by one folder for each participant with
 % the eye-tracking data in textfiles in each folder.
-folders.data                    = '../data/TX300'; % folder in which data is stored (each folder in folders.data is considered 1 subject)
+folders.data                    = 'example data'; % folder in which data is stored (each folder in folders.data is considered 1 subject)
 folders.output                  = 'output'; % folder for output (will use structure in folders.data for saving output)
 
 % Plot results
