@@ -11,9 +11,7 @@ for p=1:2:length(varargin)
 end
 
 % get missing
-qLMiss = (lx == missingx | isnan(lx)) & (ly == missingy | isnan(ly));
-qRMiss = (rx == missingx | isnan(rx)) & (ry == missingy | isnan(ry));
-qBMiss = qLMiss & qRMiss;
+[qLMiss, qRMiss, qBMiss] = getMissing(lx,rx,missingx,ly,ry,missingy);
 
 q = ~qLMiss & ~qRMiss;
 xpos(q) = (lx(q) + rx(q)) ./ 2;
