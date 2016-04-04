@@ -1,5 +1,7 @@
-function [fix,data,p] = I2MCfunc(data,varargin)
-% ROY HESSELS - 2014
+function [fix,data,par] = I2MCfunc(data,varargin)
+% Hessels, R.S., Niehorster, D.C., Kemner, C., & Hooge, I.T.C., (2016).
+% Noise-robust fixation detection in eye-movement data - Identification by 
+% 2-means clustering (I2MC). Submitted.
 
 %% deal with inputs
 % define parser
@@ -53,7 +55,7 @@ if isstruct(varargin{1})
     varargin = [reshape([fieldnames(varargin{1}) struct2cell(varargin{1})].',1,[]) varargin(2:end)];
 end
 parse(parser,varargin{:});
-p = parser.Results;
+par = parser.Results;
 
 % deal nicely with unmatched
 unmatched = fieldnames(parser.Unmatched);
@@ -71,7 +73,7 @@ end
 
 % deal with required options
 % if empty, user did not specify these
-checkFun = @(opt,str) assert(~isempty(p.(opt)),'I2MCfunc: %s must be specified using the ''%s'' option',str,opt);
+checkFun = @(opt,str) assert(~isempty(par.(opt)),'I2MCfunc: %s must be specified using the ''%s'' option',str,opt);
 checkFun('xres', 'horizontal screen resolution')
 checkFun('yres',   'vertical screen resolution')
 checkFun('freq', 'tracker sampling rate')
@@ -80,14 +82,14 @@ checkFun('missingy', 'value indicating data loss for vertical position')
 checkFun('scrSz', 'screen size ([x y]) in cm')
 checkFun('disttoscreen', 'distance to screen in cm')
 % process parameters with defaults
-if isempty(p.maxdisp)
-    p.maxdisp               = p.xres*0.2*sqrt(2); % maximum displacement during missing for interpolation to be possible
+if isempty(par.maxdisp)
+    par.maxdisp               = par.xres*0.2*sqrt(2); % maximum displacement during missing for interpolation to be possible
 end
 
 % setup visual angle conversion
-pixpercm                    = mean([p.xres p.yres]./p.scrSz(:).');
+pixpercm                    = mean([par.xres par.yres]./par.scrSz(:).');
 rad2deg                     = @(x) x/pi*180;
-degpercm                    = 2*rad2deg(atan(1/(2*p.disttoscreen)));
+degpercm                    = 2*rad2deg(atan(1/(2*par.disttoscreen)));
 pixperdeg                   = pixpercm/degpercm;
 
 %% START ALGORITHM
@@ -97,20 +99,20 @@ pixperdeg                   = pixpercm/degpercm;
 if isfield(data,'left') && ~isfield(data,'right')
     xpos = data.left.X;
     ypos = data.left.Y;
-    missing = isnan(data.left.X) | data.left.X==p.missingx | isnan(data.left.Y) | data.left.Y==p.missingy;
+    missing = isnan(data.left.X) | data.left.X==par.missingx | isnan(data.left.Y) | data.left.Y==par.missingy;
     q2Eyes = false;
 elseif isfield(data,'right') && ~isfield(data,'left')
     xpos = data.right.X;
     ypos = data.right.Y;
-    missing = isnan(data.right.X) | data.right.X==p.missingx | isnan(data.right.Y) | data.right.Y==p.missingy;
+    missing = isnan(data.right.X) | data.right.X==par.missingx | isnan(data.right.Y) | data.right.Y==par.missingy;
     q2Eyes = false;
 elseif isfield(data,'average')
     xpos = data.average.X;
     ypos = data.average.Y;
-    missing = isnan(data.avg.X) | data.avg.X==p.missingx | isnan(data.avg.Y) | data.avg.Y==p.missingy;
+    missing = isnan(data.average.X) | data.average.X==par.missingx | isnan(data.average.Y) | data.average.Y==par.missingy;
     q2Eyes = isfield(data,'right') && isfield(data,'left');
 else % we have left and right, average them
-    [data.average.X, data.average.Y, missing, llmiss, rrmiss] = averageEyes(data.left.X,data.right.X,p.missingx,data.left.Y,data.right.Y,p.missingy);
+    [data.average.X, data.average.Y, missing, llmiss, rrmiss] = averageEyes(data.left.X,data.right.X,par.missingx,data.left.Y,data.right.Y,par.missingy);
     xpos = data.average.X;
     ypos = data.average.Y;
     q2Eyes = true;
@@ -120,18 +122,18 @@ end
 
 % get interpolation windows for average and individual eye signals
 fprintf('Searching for valid interpolation windows\n');
-interpwins   = findInterpWins(xpos         ,ypos         ,missing,p.windowtimeInterp,p.edgeSampInterp,p.freq,p.maxdisp);
+interpwins   = findInterpWins(xpos, ypos, missing,par.windowtimeInterp,par.edgeSampInterp,par.freq,par.maxdisp);
 if q2Eyes
-    llinterpwins = findInterpWins(data.left.X  ,data.left.Y  ,llmiss ,p.windowtimeInterp,p.edgeSampInterp,p.freq,p.maxdisp);
-    rrinterpwins = findInterpWins(data.right.X ,data.right.Y ,rrmiss ,p.windowtimeInterp,p.edgeSampInterp,p.freq,p.maxdisp);
+    llinterpwins = findInterpWins(data.left.X  ,data.left.Y  ,llmiss ,par.windowtimeInterp,par.edgeSampInterp,par.freq,par.maxdisp);
+    rrinterpwins = findInterpWins(data.right.X ,data.right.Y ,rrmiss ,par.windowtimeInterp,par.edgeSampInterp,par.freq,par.maxdisp);
 end
 
 % Use Steffen interpolation and replace values
 fprintf('Replace interpolation windows with Steffen interpolation\n');
-[xpos,ypos,missingn]= windowedInterpolate(xpos         ,ypos         ,missing,  interpwins,p.edgeSampInterp);
+[xpos,ypos,missingn]= windowedInterpolate(xpos, ypos, missing, interpwins,par.edgeSampInterp);
 if q2Eyes
-    [llx ,lly ,llmiss]  = windowedInterpolate(data.left.X  ,data.left.Y  ,llmiss ,llinterpwins,p.edgeSampInterp);
-    [rrx ,rry ,rrmiss]  = windowedInterpolate(data.right.X ,data.right.Y ,rrmiss ,rrinterpwins,p.edgeSampInterp);
+    [llx ,lly ,llmiss]  = windowedInterpolate(data.left.X  ,data.left.Y  ,llmiss ,llinterpwins,par.edgeSampInterp);
+    [rrx ,rry ,rrmiss]  = windowedInterpolate(data.right.X ,data.right.Y ,rrmiss ,rrinterpwins,par.edgeSampInterp);
 end
 
 
@@ -140,7 +142,7 @@ if ~q2Eyes
     
     % get kmeans-clustering for averaged signal
     fprintf('2-Means clustering started for averaged signal \n');
-    [data.finalweights,stopped] = twoClusterWeighting(xpos,ypos,missingn,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
+    [data.finalweights,stopped] = twoClusterWeighting(xpos,ypos,missingn,par.downsamples,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
     
     % check whether clustering succeeded
     if stopped
@@ -152,7 +154,7 @@ if ~q2Eyes
 elseif q2Eyes
     % get kmeans-clustering for left eye signal
     fprintf('2-Means clustering started for left eye signal \n');
-    [finalweights_left,stopped] = twoClusterWeighting(llx,lly,llmiss,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
+    [finalweights_left,stopped] = twoClusterWeighting(llx,lly,llmiss,par.downsamples,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
     
     % check whether clustering succeeded
     if stopped
@@ -162,7 +164,7 @@ elseif q2Eyes
     
     % get kmeans-clustering for right eye signal
     fprintf('2-Means clustering started for right eye signal \n');
-    [finalweights_right,stopped] = twoClusterWeighting(rrx,rry,rrmiss,p.downsamples,p.chebyOrder,p.windowtime,p.steptime,p.freq,p.maxerrors);
+    [finalweights_right,stopped] = twoClusterWeighting(rrx,rry,rrmiss,par.downsamples,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
     
     % check whether clustering succeeded
     if stopped
@@ -176,6 +178,6 @@ end
 
 %% DETERMINE FIXATIONS BASED ON FINALWEIGHTS_AVG
 fprintf('Determining fixations based on clustering weight mean for averaged signal and separate eyes + 2*std \n')
-[fix.cutoff,fix.start,fix.end,fix.startT,fix.endT,fix.dur,fix.xpos,fix.ypos,fix.flankdataloss,fix.fracinterped] = getFixations(data.finalweights,data.time,xpos,ypos,missing,p.cutoffstd,p.maxMergeDist,p.maxMergeTime,p.minFixDur);
+[fix.cutoff,fix.start,fix.end,fix.startT,fix.endT,fix.dur,fix.xpos,fix.ypos,fix.flankdataloss,fix.fracinterped] = getFixations(data.finalweights,data.time,xpos,ypos,missing,par.cutoffstd,par.maxMergeDist,par.maxMergeTime,par.minFixDur);
 [fix.RMSxy,fix.BCEA,fix.fixRangeX,fix.fixRangeY] = getFixStats(xpos,ypos,missing,fix.start,fix.end,pixperdeg);
         
