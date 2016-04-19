@@ -100,26 +100,34 @@ if isfield(data,'left') && ~isfield(data,'right')
     xpos = data.left.X;
     ypos = data.left.Y;
     missing = isnan(data.left.X) | data.left.X==par.missingx | isnan(data.left.Y) | data.left.Y==par.missingy;
+    data.left.missing = missing;
     q2Eyes = false;
 elseif isfield(data,'right') && ~isfield(data,'left')
     xpos = data.right.X;
     ypos = data.right.Y;
     missing = isnan(data.right.X) | data.right.X==par.missingx | isnan(data.right.Y) | data.right.Y==par.missingy;
+    data.right.missing = missing;
     q2Eyes = false;
 elseif isfield(data,'average')
     xpos = data.average.X;
     ypos = data.average.Y;
     missing = isnan(data.average.X) | data.average.X==par.missingx | isnan(data.average.Y) | data.average.Y==par.missingy;
+    data.average.missing = missing;
     q2Eyes = isfield(data,'right') && isfield(data,'left');
     if q2Eyes
         % we have left and right and average already provided, but we need
         % to get missing in the individual eye signals
         [llmiss, rrmiss] = getMissing(data.left.X,data.right.X,par.missingx,data.left.Y,data.right.Y,par.missingy);
+        data.left.missing  = llmiss;
+        data.right.missing = rrmiss;
     end
 else % we have left and right, average them
     [data.average.X, data.average.Y, missing, llmiss, rrmiss] = averageEyes(data.left.X,data.right.X,par.missingx,data.left.Y,data.right.Y,par.missingy);
     xpos = data.average.X;
     ypos = data.average.Y;
+    data.average.missing = missing;
+    data.left.missing    = llmiss;
+    data.right.missing   = rrmiss;
     q2Eyes = true;
 end
 
