@@ -39,7 +39,7 @@
 % available you may set opt.downsample to []. This may, however, degrade
 % performance of the algorithm.
 
-% Tested on MATLAB R2014b & R2015b
+% Tested on MATLAB R2012a, R2014b & R2016a
 
 %% INITIALIZE
 clear variables; clear mex; close all; fclose('all'); clc;
