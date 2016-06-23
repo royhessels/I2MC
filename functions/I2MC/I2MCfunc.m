@@ -4,71 +4,74 @@ function [fix,data,par] = I2MCfunc(data,varargin)
 % 2-means clustering (I2MC). Submitted.
 
 %% deal with inputs
-% define parser
-parser = inputParser;
-parser.FunctionName    = mfilename;
-parser.KeepUnmatched   = true;
-parser.PartialMatching = false;
-% required parameters:
-parser.addParameter('xres'          , [], @(x) validateattributes(x,{'numeric'},{'scalar'}));
-parser.addParameter('yres'          , [], @(x) validateattributes(x,{'numeric'},{'scalar'}));
-parser.addParameter('freq'          , [], @(x) validateattributes(x,{'numeric'},{'scalar'}));
-parser.addParameter('missingx'      , [], @(x) validateattributes(x,{'numeric'},{'scalar'}));
-parser.addParameter('missingy'      , [], @(x) validateattributes(x,{'numeric'},{'scalar'}));
-parser.addParameter('scrSz'         , [], @(x) validateattributes(x,{'numeric'},{'numel',2}));
-parser.addParameter('disttoscreen'  , [], @(x) validateattributes(x,{'numeric'},{'scalar'}));
-% parameters with defaults:
-% CUBIC SPLINE INTERPOLATION
-% max duration (s) of missing values for interpolation to occur
-parser.addParameter('windowtimeInterp'  , 0.1 , @(x) validateattributes(x,{'numeric'},{'scalar'}));
-% amount of data (number of samples) at edges needed for interpolation
-parser.addParameter('edgeSampInterp'    , 2   , @(x) validateattributes(x,{'numeric'},{'scalar','integer'}));
-% (default value set below if needed) maximum displacement during missing for interpolation to be possible
-parser.addParameter('maxdisp'           , []  , @(x) validateattributes(x,{'numeric'},{'scalar'}));
-% K-MEANS CLUSTERING
-% time window (s) over which to calculate 2-means clustering (choose value so that max. 1 saccade can occur)
-parser.addParameter('windowtime'        , 0.2 , @(x) validateattributes(x,{'numeric'},{'scalar'}));
-% time window shift (s) for each iteration. Use zero for sample by sample processing
-parser.addParameter('steptime'          , 0.02, @(x) validateattributes(x,{'numeric'},{'scalar'}));
-% downsample levels (can be empty)
-parser.addParameter('downsamples'       , [2 5 10], @(x) validateattributes(x,{'numeric'},{'integer'}));
-% order of cheby1 Chebyshev downsampling filter, default is normally ok, as
-% long as there are 25 or more samples in the window (you may have less if
-% your data is of low sampling rate or your window is small
-parser.addParameter('chebyOrder'        , 8   , @(x) validateattributes(x,{'numeric'},{'integer'}));
-% maximum number of errors allowed in k-means clustering procedure before proceeding to next file
-parser.addParameter('maxerrors'         , 100 , @(x) validateattributes(x,{'numeric'},{'scalar','integer'}));
-% FIXATION DETERMINATION
-% number of standard deviations above mean k-means weights will be used as fixation cutoff
-parser.addParameter('cutoffstd'         , 2   , @(x) validateattributes(x,{'numeric'},{'scalar'}));
-% maximum Euclidean distance in pixels between fixations for merging
-parser.addParameter('maxMergeDist'      , 30  , @(x) validateattributes(x,{'numeric'},{'scalar'}));
-% maximum time in ms between fixations for merging
-parser.addParameter('maxMergeTime'      , 30  , @(x) validateattributes(x,{'numeric'},{'scalar'}));
-% minimum fixation duration (ms) after merging, fixations with shorter duration are removed from output
-parser.addParameter('minFixDur'         , 40  , @(x) validateattributes(x,{'numeric'},{'scalar'}));
-
 % get inputs the user specified and throw them in the parser
 if isstruct(varargin{1})
     % convert to key-value pairs
     assert(isscalar(varargin),'only one input for options is expected if options are given as a struct')
     varargin = [reshape([fieldnames(varargin{1}) struct2cell(varargin{1})].',1,[]) varargin(2:end)];
 end
-parse(parser,varargin{:});
-par = parser.Results;
 
-% deal nicely with unmatched
-unmatched = fieldnames(parser.Unmatched);
-if ~isempty(unmatched)
-    msg = sprintf('Some parameters were unrecognized:\n');
-    for q=1:length(unmatched)
-        msg = [msg sprintf('  %s: %s\n',unmatched{q},Var2Str(parser.Unmatched.(unmatched{q})))];
+% set defaults
+% required parameters:
+par.xres            = [];
+par.yres            = [];
+par.freq            = [];
+par.missingx        = [];
+par.missingy        = [];
+par.scrSz           = [];
+par.disttoscreen    = [];
+% parameters with defaults:
+% CUBIC SPLINE INTERPOLATION
+par.windowtimeInterp = .1;      % max duration (s) of missing values for interpolation to occur
+par.edgeSampInterp  = 2;        % amount of data (number of samples) at edges needed for interpolation
+par.maxdisp         = [];       % (default value set below if needed) maximum displacement during missing for interpolation to be possible
+% K-MEANS CLUSTERING
+par.windowtime      = .2;       % time window (s) over which to calculate 2-means clustering (choose value so that max. 1 saccade can occur)
+par.steptime        = .02;      % time window shift (s) for each iteration. Use zero for sample by sample processing
+par.downsamples     = [2 5 10]; % downsample levels (can be empty)
+par.chebyOrder      = 8;        % order of cheby1 Chebyshev downsampling filter, default is normally ok, as long as there are 25 or more samples in the window (you may have less if your data is of low sampling rate or your window is small
+par.maxerrors       = 100;      % maximum number of errors allowed in k-means clustering procedure before proceeding to next file
+% FIXATION DETERMINATION
+par.cutoffstd       = 2;        % number of standard deviations above mean k-means weights will be used as fixation cutoff
+par.maxMergeDist    = 30;       % maximum Euclidean distance in pixels between fixations for merging
+par.maxMergeTime    = 30;       % maximum time in ms between fixations for merging
+par.minFixDur       = 40;       % minimum fixation duration (ms) after merging, fixations with shorter duration are removed from output
+
+
+% loop over input
+checkNumeric = @(x,k) assert(isnumeric(x),'The value of ''%s'' is invalid. Expected input to be one of these types:\n\ndouble, single, uint8, uint16, uint32, uint64, int8, int16, int32, int64\n\nInstead its type was %s.',k,class(x));
+checkScalar  = @(x,k) assert(isscalar(x),'The value of ''%s'' is invalid. Expected input to be a scalar.',k);
+checkNumel2  = @(x,k) assert(numel(x)==2,'The value of ''%s'' is invalid. Expected input to be an array with number of elements equal to 2.',k);
+checkInt  = @(x,k) assert(isinteger(x),'The value of ''%s'' is invalid. Expected input to be integer-valued.',k);
+for p=1:2:length(varargin)
+    key = varargin{p};
+    if p+1>length(varargin)
+        error('No value was given for ''%s''. Name-value pair arguments require a name followed by a value.',key);
     end
-    msg = [msg sprintf('\nValid recognizable parameters are:\n  ')];
-    msg = [msg strjoin(parser.Parameters,sprintf('\n  '))];
-        
-    ME = MException(sprintf('%s:InputError',mfilename),msg);
-    throwAsCaller(ME);
+    value = varargin{p+1};
+    switch key
+        case {'xres','yres','freq','missingx','missingy','disttoscreen','windowtimeInterp','maxdisp','windowtime','steptime','cutoffstd','maxMergeDist','maxMergeTime','minFixDur'}
+            checkNumeric(value,key);
+            checkScalar(value,key);
+            par.(key) = value;
+        case {'chebyOrder','maxerrors','edgeSampInterp'}
+            checkInt(value,key);
+            checkScalar(value,key);
+            par.(key) = value;
+        case 'scrSz'
+            checkNumeric(value,key);
+            checkNumel2(value,key);
+            par.(key) = value;
+        case 'downsamples'
+            checkInt(value,key);
+            par.(key) = value;
+        otherwise
+            if ~ischar(key)
+                error('Expected a string for the parameter name at position %d, instead the input type was ''%s''.',class(key));
+            else
+                error('Key "%s" not recognized',key);
+            end
+    end
 end
 
 % deal with required options
