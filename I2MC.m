@@ -10,7 +10,8 @@
 % 2-means clustering (I2MC). Submitted.
 
 % For more information, questions, or to check whether we have updated to a
-% better version, e-mail: royhessels@gmail.com / dcnieho@gmail.com
+% better version, e-mail: royhessels@gmail.com / dcnieho@gmail.com. I2MC is
+% available from www.github.com/royhessels/I2MC
 
 % Most parts of the I2MC algorithm are licensed under the Creative Commons
 % Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT 
