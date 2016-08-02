@@ -98,6 +98,9 @@ do.plots                        = 1; % if set to 1, plot of fixation detection f
 
 folders.func                = 'functions'; % folder for functions, will add to matlab path
 addpath(genpath(folders.func));
+if ~isdir(folders.output)
+    mkdir(folders.output);
+end
 
 %% START ALGORITHM
 
