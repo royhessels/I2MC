@@ -42,7 +42,7 @@ par.minFixDur       = 40;       % minimum fixation duration (ms) after merging, 
 checkNumeric = @(x,k) assert(isnumeric(x),'The value of ''%s'' is invalid. Expected input to be one of these types:\n\ndouble, single, uint8, uint16, uint32, uint64, int8, int16, int32, int64\n\nInstead its type was %s.',k,class(x));
 checkScalar  = @(x,k) assert(isscalar(x),'The value of ''%s'' is invalid. Expected input to be a scalar.',k);
 checkNumel2  = @(x,k) assert(numel(x)==2,'The value of ''%s'' is invalid. Expected input to be an array with number of elements equal to 2.',k);
-checkInt  = @(x,k) assert(isinteger(x),'The value of ''%s'' is invalid. Expected input to be integer-valued.',k);
+checkInt     = @(x,k) assert(~any(mod(x,1)),'The value of ''%s'' is invalid. Expected input to be integer-valued.',k);
 for p=1:2:length(varargin)
     key = varargin{p};
     if p+1>length(varargin)
