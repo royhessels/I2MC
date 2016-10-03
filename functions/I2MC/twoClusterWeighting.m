@@ -1,10 +1,11 @@
-function [finalweights,stopped] = twoClusterWeighting(xpos,ypos,missing,downsamples,chebyOrder,windowtime,steptime,freq,maxerrors)
+function [finalweights,stopped] = twoClusterWeighting(xpos,ypos,missing,downsamples,downsampFilter,chebyOrder,windowtime,steptime,freq,maxerrors)
 % Calculates 2-means cluster weighting for eye-tracking data
 %
 % Input:
 % xpos,ypos                     = horizontal and vertical coordinates from eye-tracker over which to calculate 2-means clustering
 % missingn                      = boolean indicating which samples are missing
 % downsamples                   = downsample levels used for data (1/no downsampling is always done, don't specify that) 
+% downsampFilter                = use chebychev filter when downsampling? 1: yes, 0: no. requires signal processing toolbox. is what matlab's downsampling functions do, but could cause trouble (ringing) with the hard edges in eye-movement data
 % chebyOrder                    = order of Chebyshev downsampling filter
 % windowtime                    = time window (s) over which to calculate 2-means clustering (choose value so that max. 1 saccade can occur)
 % steptime                      = time window (s) in each iteration. Use zero for sample by sample processing
@@ -35,12 +36,17 @@ counterrors = 0;
 nd = length(downsamples);
 assert(~any(mod(freq,downsamples)),'Some of your downsample levels are not divisors of your sampling frequency')
 
-% filter signal. Follow the lead of decimate(), which first runs a
-% Chebychev filter as specified below
-rip = .05;	% passband ripple in dB
-[b,a,idxs] = deal(cell(1,nd));
+if downsampFilter
+    % filter signal. Follow the lead of decimate(), which first runs a
+    % Chebychev filter as specified below
+    rip = .05;	% passband ripple in dB
+    [b,a] = deal(cell(1,nd));
+    for p=1:nd
+        [b{p},a{p}] = cheby1(chebyOrder, rip, .8/downsamples(p));
+    end
+end
+idxs = cell(1,nd);
 for p=1:nd
-    [b{p},a{p}] = cheby1(chebyOrder, rip, .8/downsamples(p));
     idxs{p}     = fliplr(nrsamples:-downsamples(p):1);
 end
 
@@ -94,8 +100,12 @@ while eind<=length(xpos)
     % number of samples is reduced. select samples such that they are till
     % end of window
     for p=1:nd
-        ll_d{p+1} = filtfilt(b{p},a{p},ll_d{1});
-        ll_d{p+1} = ll_d{p+1}(idxs{p},:);
+        if downsampFilter
+            ll_d{p+1} = filtfilt(b{p},a{p},ll_d{1});
+            ll_d{p+1} = ll_d{p+1}(idxs{p},:);
+        else
+            ll_d{p+1} = ll_d{1}(idxs{p},:);
+        end
     end
     
     % do 2-means clustering

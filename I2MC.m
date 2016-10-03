@@ -83,10 +83,11 @@ do.plots                        = 1; % if set to 1, plot of fixation detection f
 % opt.maxdisp                     = opt.xres*0.2*sqrt(2); % maximum displacement during missing for interpolation to be possible
 % 
 % % K-MEANS CLUSTERING
-% opt.windowtime                  = 0.2; % time window (s) over which to calculate 2-means clustering (choose value so that max. 1 saccade can occur)
-% opt.steptime                    = 0.02;% time window shift (s) for each iteration. Use zero for sample by sample processing
-% opt.maxerrors                   = 100; % maximum number of errors allowed in k-means clustering procedure before proceeding to next file
+% opt.windowtime                  = 0.2;        % time window (s) over which to calculate 2-means clustering (choose value so that max. 1 saccade can occur)
+% opt.steptime                    = 0.02;       % time window shift (s) for each iteration. Use zero for sample by sample processing
+% opt.maxerrors                   = 100;        % maximum number of errors allowed in k-means clustering procedure before proceeding to next file
 % opt.downsamples                 = [2 5 10];
+% opt.downsampFilter              = 0;          % use chebychev filter when downsampling? 1: yes, 0: no. requires signal processing toolbox. is what matlab's downsampling functions do, but could cause trouble (ringing) with the hard edges in eye-movement data
 % 
 % % FIXATION DETERMINATION
 % opt.cutoffstd                   = 2; % number of standard deviations above mean k-means weights will be used as fixation cutoff
