@@ -3,24 +3,24 @@
 % The I2MC algorithm was designed to accomplish fixation detection in data
 % across a wide range of noise levels and when periods of data loss may
 % occur.
-
+% 
 % Cite as:
 % Hessels, R.S., Niehorster, D.C., Kemner, C., & Hooge, I.T.C., (2016).
 % Noise-robust fixation detection in eye-movement data - Identification by 
-% 2-means clustering (I2MC). Submitted.
-
+% 2-means clustering (I2MC). Behavior Research Methods.
+% 
 % For more information, questions, or to check whether we have updated to a
 % better version, e-mail: royhessels@gmail.com / dcnieho@gmail.com. I2MC is
 % available from www.github.com/royhessels/I2MC
-
+% 
 % Most parts of the I2MC algorithm are licensed under the Creative Commons
 % Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT 
 % license, and some may be under other licenses.
-
+% 
 % Quick start guide for adopting this script for your own data:
 % 1) Build an import function specific for your data (see importTobiiTX300
 % for an example). 
-
+% 
 % 2) Change line 106 to use your new import function. The format should be:
 %
 % data.time for the timestamp
@@ -31,15 +31,15 @@
 % You may provide coordinates from both eyes, only the left, only the
 % right, or only the average.
 % Gaze coordinates should be in pixels, timestamps should be in milliseconds
-
+% 
 % 3) Adjust the variables in the "necessary variables" section to match your
 %    data
 % 4) Run the algorithm
-
-% Requirements: Signal Processing Toolbox for downsampling. If not
-% available you may set opt.downsample to []. This may, however, degrade
-% performance of the algorithm.
-
+% 
+% Note: Signal Processing Toolbox is required for the default downsampling
+% procedure. If not available, set opt.downsampFilter to 0. This will use a
+% different downsampling procedure.
+% 
 % Tested on MATLAB R2012a, R2014b & R2016a
 
 %% INITIALIZE
@@ -83,10 +83,11 @@ do.plots                        = 1; % if set to 1, plot of fixation detection f
 % opt.maxdisp                     = opt.xres*0.2*sqrt(2); % maximum displacement during missing for interpolation to be possible
 % 
 % % K-MEANS CLUSTERING
-% opt.windowtime                  = 0.2; % time window (s) over which to calculate 2-means clustering (choose value so that max. 1 saccade can occur)
-% opt.steptime                    = 0.02;% time window shift (s) for each iteration. Use zero for sample by sample processing
-% opt.maxerrors                   = 100; % maximum number of errors allowed in k-means clustering procedure before proceeding to next file
+% opt.windowtime                  = 0.2;        % time window (s) over which to calculate 2-means clustering (choose value so that max. 1 saccade can occur)
+% opt.steptime                    = 0.02;       % time window shift (s) for each iteration. Use zero for sample by sample processing
+% opt.maxerrors                   = 100;        % maximum number of errors allowed in k-means clustering procedure before proceeding to next file
 % opt.downsamples                 = [2 5 10];
+% opt.downsampFilter              = 0;          % use chebychev filter when downsampling? 1: yes, 0: no. requires signal processing toolbox. is what matlab's downsampling functions do, but could cause trouble (ringing) with the hard edges in eye-movement data
 % 
 % % FIXATION DETERMINATION
 % opt.cutoffstd                   = 2; % number of standard deviations above mean k-means weights will be used as fixation cutoff

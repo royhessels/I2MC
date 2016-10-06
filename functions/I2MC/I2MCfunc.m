@@ -29,6 +29,7 @@ par.maxdisp         = [];       % (default value set below if needed) maximum di
 par.windowtime      = .2;       % time window (s) over which to calculate 2-means clustering (choose value so that max. 1 saccade can occur)
 par.steptime        = .02;      % time window shift (s) for each iteration. Use zero for sample by sample processing
 par.downsamples     = [2 5 10]; % downsample levels (can be empty)
+par.downsampFilter  = 1;        % use chebychev filter when downsampling? 1: yes, 0: no. requires signal processing toolbox. is what matlab's downsampling functions do, but could cause trouble (ringing) with the hard edges in eye-movement data
 par.chebyOrder      = 8;        % order of cheby1 Chebyshev downsampling filter, default is normally ok, as long as there are 25 or more samples in the window (you may have less if your data is of low sampling rate or your window is small
 par.maxerrors       = 100;      % maximum number of errors allowed in k-means clustering procedure before proceeding to next file
 % FIXATION DETERMINATION
@@ -54,7 +55,7 @@ for p=1:2:length(varargin)
             checkNumeric(value,key);
             checkScalar(value,key);
             par.(key) = value;
-        case {'chebyOrder','maxerrors','edgeSampInterp'}
+        case {'downsampFilter','chebyOrder','maxerrors','edgeSampInterp'}
             checkInt(value,key);
             checkScalar(value,key);
             par.(key) = value;
@@ -158,7 +159,7 @@ if ~q2Eyes
     
     % get kmeans-clustering for averaged signal
     fprintf('2-Means clustering started for averaged signal \n');
-    [data.finalweights,stopped] = twoClusterWeighting(xpos,ypos,missingn,par.downsamples,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
+    [data.finalweights,stopped] = twoClusterWeighting(xpos,ypos,missingn,par.downsamples,par.downsampFilter,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
     
     % check whether clustering succeeded
     if stopped
@@ -170,7 +171,7 @@ if ~q2Eyes
 elseif q2Eyes
     % get kmeans-clustering for left eye signal
     fprintf('2-Means clustering started for left eye signal \n');
-    [finalweights_left,stopped] = twoClusterWeighting(llx,lly,llmiss,par.downsamples,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
+    [finalweights_left,stopped] = twoClusterWeighting(llx,lly,llmiss,par.downsamples,par.downsampFilter,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
     
     % check whether clustering succeeded
     if stopped
@@ -180,7 +181,7 @@ elseif q2Eyes
     
     % get kmeans-clustering for right eye signal
     fprintf('2-Means clustering started for right eye signal \n');
-    [finalweights_right,stopped] = twoClusterWeighting(rrx,rry,rrmiss,par.downsamples,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
+    [finalweights_right,stopped] = twoClusterWeighting(rrx,rry,rrmiss,par.downsamples,par.downsampFilter,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
     
     % check whether clustering succeeded
     if stopped
