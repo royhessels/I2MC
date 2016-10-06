@@ -3,24 +3,24 @@
 % The I2MC algorithm was designed to accomplish fixation detection in data
 % across a wide range of noise levels and when periods of data loss may
 % occur.
-
+% 
 % Cite as:
 % Hessels, R.S., Niehorster, D.C., Kemner, C., & Hooge, I.T.C., (2016).
 % Noise-robust fixation detection in eye-movement data - Identification by 
-% 2-means clustering (I2MC). Submitted.
-
+% 2-means clustering (I2MC). Behavior Research Methods.
+% 
 % For more information, questions, or to check whether we have updated to a
 % better version, e-mail: royhessels@gmail.com / dcnieho@gmail.com. I2MC is
 % available from www.github.com/royhessels/I2MC
-
+% 
 % Most parts of the I2MC algorithm are licensed under the Creative Commons
 % Attribution 4.0 (CC BY 4.0) license. Some functions are under MIT 
 % license, and some may be under other licenses.
-
+% 
 % Quick start guide for adopting this script for your own data:
 % 1) Build an import function specific for your data (see importTobiiTX300
 % for an example). 
-
+% 
 % 2) Change line 106 to use your new import function. The format should be:
 %
 % data.time for the timestamp
@@ -31,15 +31,15 @@
 % You may provide coordinates from both eyes, only the left, only the
 % right, or only the average.
 % Gaze coordinates should be in pixels, timestamps should be in milliseconds
-
+% 
 % 3) Adjust the variables in the "necessary variables" section to match your
 %    data
 % 4) Run the algorithm
-
-% Requirements: Signal Processing Toolbox for downsampling. If not
-% available you may set opt.downsample to []. This may, however, degrade
-% performance of the algorithm.
-
+% 
+% Note: Signal Processing Toolbox is required for the default downsampling
+% procedure. If not available, set opt.downsampFilter to 0. This will use a
+% different downsampling procedure.
+% 
 % Tested on MATLAB R2012a, R2014b & R2016a
 
 %% INITIALIZE
