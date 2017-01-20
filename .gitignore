@@ -4,3 +4,5 @@
 *.swp
 *.bak
 /output/*
+/.dropbox
+/desktop.ini
