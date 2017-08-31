@@ -1,4 +1,4 @@
-function [cutoff,fixstart,fixend,starttime,endtime,fixdur,xmedian,ymedian,flankdataloss,fracinterped] = getFixations(finalweights,timestamp,xpos,ypos,missing,cutoffstd,maxMergeDist,maxMergeTime,minFixDur)
+function [cutoff,fixstart,fixend,starttime,endtime,fixdur,xmedian,ymedian,flankdataloss,fracinterped] = getFixations(finalweights,timestamp,xpos,ypos,missing,cutoffstd,onoffsetThresh,maxMergeDist,maxMergeTime,minFixDur)
 % determine fixations based on finalweights from 2-means clustering
 
 % Roy Hessels - 2014
@@ -12,6 +12,8 @@ function [cutoff,fixstart,fixend,starttime,endtime,fixdur,xmedian,ymedian,flankd
 %                             missing (originally, before interpolation!)
 % cutoffstd                 = number of std above mean clustering-weight to
 %                               use as fixation cutoff
+% onoffsetThresh            = threshold (x*MAD of fixation) for walking 
+%                               forward/back for saccade off- and onsets
 % maxMergeDist              = maximum Euclidean distance in pixels between fixations for merging
 % maxMergeTime              = maximum time in ms between fixations for merging
 
@@ -42,6 +44,36 @@ fixbool = finalweights < cutoff;
 
 % get indices of where fixations start and end
 [fixstart,fixend] = bool2bounds(fixbool);
+
+% for each fixation start, walk forward until recorded position is below a
+% threshold of lambda*MAD away from median fixation position.
+% same for each fixation end, but walk backward
+for p=1:length(fixstart)
+    xmedThis = median(xpos(fixstart(p):fixend(p)));
+    ymedThis = median(ypos(fixstart(p):fixend(p)));
+    % MAD = median(abs(x_i-median({x}))). For the 2D version, I'm using
+    % median 2D distance of a point from the median fixation position. Not
+    % exactly MAD, but makes more sense to me for 2D than city block,
+    % especially given that we use 2D distance in our walk here
+    MAD = median(hypot(xpos(fixstart(p):fixend(p))-xmedThis, ypos(fixstart(p):fixend(p))-ymedThis));
+    
+    thresh = MAD*onoffsetThresh;
+    
+    % walk until distance less than threshold away from median fixation
+    % position. No walking occurs when we're already below threshold.
+    i = fixstart(p);
+    while hypot(xpos(i)-xmedThis,ypos(i)-ymedThis)>thresh
+        i = i+1;
+    end
+    fixstart(p) = i;
+    
+    % and now fixation end.
+    i = fixend(p);
+    while hypot(xpos(i)-xmedThis,ypos(i)-ymedThis)>thresh
+        i = i-1;
+    end
+    fixend(p) = i;
+end
 
 % get start time, end time, and fix duration
 starttime   = timestamp(fixstart);
