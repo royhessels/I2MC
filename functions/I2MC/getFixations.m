@@ -62,17 +62,21 @@ for p=1:length(fixstart)
     % walk until distance less than threshold away from median fixation
     % position. No walking occurs when we're already below threshold.
     i = fixstart(p);
-    while hypot(xpos(i)-xmedThis,ypos(i)-ymedThis)>thresh
-        i = i+1;
+    if i>1  % don't walk when fixation starting at start of data
+        while hypot(xpos(i)-xmedThis,ypos(i)-ymedThis)>thresh
+            i = i+1;
+        end
+        fixstart(p) = i;
     end
-    fixstart(p) = i;
     
     % and now fixation end.
     i = fixend(p);
-    while hypot(xpos(i)-xmedThis,ypos(i)-ymedThis)>thresh
-        i = i-1;
+    if i<length(xpos)   % don't walk when fixation ending at end of data
+        while hypot(xpos(i)-xmedThis,ypos(i)-ymedThis)>thresh
+            i = i-1;
+        end
+        fixend(p) = i;
     end
-    fixend(p) = i;
 end
 
 % get start time, end time, and fix duration
