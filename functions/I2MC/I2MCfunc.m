@@ -34,7 +34,7 @@ par.chebyOrder      = 8;        % order of cheby1 Chebyshev downsampling filter,
 par.maxerrors       = 100;      % maximum number of errors allowed in k-means clustering procedure before proceeding to next file
 % FIXATION DETERMINATION
 par.cutoffstd       = 2;        % number of standard deviations above mean k-means weights will be used as fixation cutoff
-par.onoffsetThresh  = 2;        % number of MAD away from median fixation duration. Will be used to walk forward at fixation starts and backward at fixation ends to refine their placement and stop algorithm from eating into saccades
+par.onoffsetThresh  = 3;        % number of MAD away from median fixation duration. Will be used to walk forward at fixation starts and backward at fixation ends to refine their placement and stop algorithm from eating into saccades
 par.maxMergeDist    = 30;       % maximum Euclidean distance in pixels between fixations for merging
 par.maxMergeTime    = 30;       % maximum time in ms between fixations for merging
 par.minFixDur       = 40;       % minimum fixation duration (ms) after merging, fixations with shorter duration are removed from output
