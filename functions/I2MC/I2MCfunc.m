@@ -34,6 +34,7 @@ par.chebyOrder      = 8;        % order of cheby1 Chebyshev downsampling filter,
 par.maxerrors       = 100;      % maximum number of errors allowed in k-means clustering procedure before proceeding to next file
 % FIXATION DETERMINATION
 par.cutoffstd       = 2;        % number of standard deviations above mean k-means weights will be used as fixation cutoff
+par.onoffsetThresh  = 3;        % number of MAD away from median fixation duration. Will be used to walk forward at fixation starts and backward at fixation ends to refine their placement and stop algorithm from eating into saccades
 par.maxMergeDist    = 30;       % maximum Euclidean distance in pixels between fixations for merging
 par.maxMergeTime    = 30;       % maximum time in ms between fixations for merging
 par.minFixDur       = 40;       % minimum fixation duration (ms) after merging, fixations with shorter duration are removed from output
@@ -51,7 +52,7 @@ for p=1:2:length(varargin)
     end
     value = varargin{p+1};
     switch key
-        case {'xres','yres','freq','missingx','missingy','disttoscreen','windowtimeInterp','maxdisp','windowtime','steptime','cutoffstd','maxMergeDist','maxMergeTime','minFixDur'}
+        case {'xres','yres','freq','missingx','missingy','disttoscreen','windowtimeInterp','maxdisp','windowtime','steptime','cutoffstd','onoffsetThresh','maxMergeDist','maxMergeTime','minFixDur'}
             checkNumeric(value,key);
             checkScalar(value,key);
             par.(key) = value;
@@ -195,6 +196,6 @@ end
 
 %% DETERMINE FIXATIONS BASED ON FINALWEIGHTS_AVG
 fprintf('Determining fixations based on clustering weight mean for averaged signal and separate eyes + 2*std \n')
-[fix.cutoff,fix.start,fix.end,fix.startT,fix.endT,fix.dur,fix.xpos,fix.ypos,fix.flankdataloss,fix.fracinterped] = getFixations(data.finalweights,data.time,xpos,ypos,missing,par.cutoffstd,par.maxMergeDist,par.maxMergeTime,par.minFixDur);
+[fix.cutoff,fix.start,fix.end,fix.startT,fix.endT,fix.dur,fix.xpos,fix.ypos,fix.flankdataloss,fix.fracinterped] = getFixations(data.finalweights,data.time,xpos,ypos,missing,par.cutoffstd,par.onoffsetThresh,par.maxMergeDist,par.maxMergeTime,par.minFixDur);
 [fix.RMSxy,fix.BCEA,fix.fixRangeX,fix.fixRangeY] = getFixStats(xpos,ypos,missing,fix.start,fix.end,pixperdeg);
         
