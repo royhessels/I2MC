@@ -34,7 +34,6 @@ counterrors = 0;
 
 % check downsample levels
 nd = length(downsamples);
-assert(~any(mod(freq,downsamples)),'Some of your downsample levels are not divisors of your sampling frequency')
 
 if downsampFilter
     % filter signal. Follow the lead of decimate(), which first runs a

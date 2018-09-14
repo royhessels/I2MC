@@ -98,6 +98,7 @@ if par.downsampFilter
     nSampInWin    = round(par.windowtime/(1/par.freq));
     assert(nSampInWin>=nSampRequired,'I2MCfunc: Filter parameters requested with the setting ''chebyOrder'' will not work for the sampling frequency of your data. Please lower ''chebyOrder'', or set the setting ''downsampFilter'' to 0')
 end
+assert(~any(mod(par.freq,par.downsamples)),'I2MCfunc: Some of your downsample levels are not divisors of your sampling frequency. Change the option ''downsamples''')
 
 % setup visual angle conversion
 pixpercm                    = mean([par.xres par.yres]./par.scrSz(:).');
