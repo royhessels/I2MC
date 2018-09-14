@@ -91,6 +91,14 @@ if isempty(par.maxdisp)
     par.maxdisp               = par.xres*0.2*sqrt(2); % maximum displacement during missing for interpolation to be possible
 end
 
+% check filter
+if par.downsampFilter
+    assert(exist('cheby1','file')==2,'I2MCfunc: When setting the ''downsampFilter'' option to true, the function ''cheby1'' from the signal processing toolbox is required. It appears this function is not available in your installation. Set the option to 0.')
+    nSampRequired = max(1,3*par.chebyOrder)+1;  % nSampRequired = max(1,3*(nfilt-1))+1, where nfilt = chebyOrder+1
+    nSampInWin    = round(par.windowtime/(1/par.freq));
+    assert(nSampInWin>=nSampRequired,'I2MCfunc: Filter parameters requested with the setting ''chebyOrder'' will not work for the sampling frequency of your data. Please lower ''chebyOrder'', or set the setting ''downsampFilter'' to 0')
+end
+
 % setup visual angle conversion
 pixpercm                    = mean([par.xres par.yres]./par.scrSz(:).');
 rad2deg                     = @(x) x/pi*180;
