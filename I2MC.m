@@ -21,7 +21,7 @@
 % 1) Build an import function specific for your data (see importTobiiTX300
 % for an example). 
 % 
-% 2) Change line 106 to use your new import function. The format should be:
+% 2) Change line 134 to use your new import function. The format should be:
 %
 % data.time for the timestamp
 % data.left.X & data.left.Y for left gaze coordinates
