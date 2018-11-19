@@ -18,8 +18,8 @@ par.yres            = [];
 par.freq            = [];
 par.missingx        = [];
 par.missingy        = [];
-par.scrSz           = [];
-par.disttoscreen    = [];
+par.scrSz           = [];       % screen size (e.g. in cm). Optional, specify if want fixation statistics in deg
+par.disttoscreen    = [];       % screen distance (in same unit as size). Optional, specify if want fixation statistics in deg
 % parameters with defaults:
 % CUBIC SPLINE INTERPOLATION
 par.windowtimeInterp = .1;      % max duration (s) of missing values for interpolation to occur
@@ -84,8 +84,6 @@ checkFun('yres',   'vertical screen resolution')
 checkFun('freq', 'tracker sampling rate')
 checkFun('missingx', 'value indicating data loss for horizontal position')
 checkFun('missingy', 'value indicating data loss for vertical position')
-checkFun('scrSz', 'screen size ([x y]) in cm')
-checkFun('disttoscreen', 'distance to screen in cm')
 % process parameters with defaults
 if isempty(par.maxdisp)
     par.maxdisp               = par.xres*0.2*sqrt(2); % maximum displacement during missing for interpolation to be possible
@@ -101,10 +99,13 @@ end
 assert(~any(mod(par.freq,par.downsamples)),'I2MCfunc: Some of your downsample levels are not divisors of your sampling frequency. Change the option ''downsamples''')
 
 % setup visual angle conversion
-pixpercm                    = mean([par.xres par.yres]./par.scrSz(:).');
-rad2deg                     = @(x) x/pi*180;
-degpercm                    = 2*rad2deg(atan(1/(2*par.disttoscreen)));
-pixperdeg                   = pixpercm/degpercm;
+pixperdeg = [];
+if ~isempty(par.scrSz) && ~isempty(par.disttoscreen)
+    pixpercm                    = mean([par.xres par.yres]./par.scrSz(:).');
+    rad2deg                     = @(x) x/pi*180;
+    degpercm                    = 2*rad2deg(atan(1/(2*par.disttoscreen)));
+    pixperdeg                   = pixpercm/degpercm;
+end
 
 %% START ALGORITHM
 
@@ -207,4 +208,3 @@ end
 fprintf('Determining fixations based on clustering weight mean for averaged signal and separate eyes + 2*std \n')
 [fix.cutoff,fix.start,fix.end,fix.startT,fix.endT,fix.dur,fix.xpos,fix.ypos,fix.flankdataloss,fix.fracinterped] = getFixations(data.finalweights,data.time,xpos,ypos,missing,par.cutoffstd,par.onoffsetThresh,par.maxMergeDist,par.maxMergeTime,par.minFixDur);
 [fix.RMSxy,fix.BCEA,fix.fixRangeX,fix.fixRangeY] = getFixStats(xpos,ypos,missing,fix.start,fix.end,pixperdeg);
-        

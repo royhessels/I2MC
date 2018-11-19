@@ -39,12 +39,19 @@ for a=1:length(fstart)
     xdif = diff(xdif).^2; xdif(isnan(xdif)) = [];
     ydif = diff(ydif).^2; ydif(isnan(ydif)) = [];
     c    = xdif + ydif; % 2D sample-to-sample displacement value in pixels
-    visuelehoeksq = c./pixperdeg^2; % value in degrees visual angle
-    RMSxy(a) = sqrt(mean(visuelehoeksq));
+    RMSxy(a) = sqrt(mean(c));
+    if ~isempty(pixperdeg)
+        RMSxy(a) = RMSxy(a)/pixperdeg; % value in degrees visual angle
+    end
     
     % calculate BCEA (Crossland and Rubin 2002 Optometry and Vision Science)
-    stdx = std(xposf(~qMiss))/pixperdeg; % value in degrees visual angle
-    stdy = std(yposf(~qMiss))/pixperdeg; % value in degrees visual angle
+    stdx = std(xposf(~qMiss));
+    stdy = std(yposf(~qMiss));
+    if ~isempty(pixperdeg)
+        % value in degrees visual angle
+        stdx = stdx/pixperdeg;
+        stdy = stdy/pixperdeg;
+    end
     if length(yposf(~qMiss))<2
         BCEA(a) = nan;
     else
@@ -61,7 +68,12 @@ for a=1:length(fstart)
         rangeX(a) = nan;
         rangeY(a) = nan;
     else
-        rangeX(a) = (max(xposf(~qMiss)) - min(xposf(~qMiss)))/pixperdeg;
-        rangeY(a) = (max(yposf(~qMiss)) - min(yposf(~qMiss)))/pixperdeg;
+        rangeX(a) = (max(xposf(~qMiss)) - min(xposf(~qMiss)));
+        rangeY(a) = (max(yposf(~qMiss)) - min(yposf(~qMiss)));
+    end
+    if ~isempty(pixperdeg)
+        % value in degrees visual angle
+        rangeX = rangeX/pixperdeg;
+        rangeY = rangeY/pixperdeg;
     end
 end

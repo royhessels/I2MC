@@ -59,6 +59,8 @@ opt.freq                        = 300; % sampling frequency of data (check that 
 % Variables for the calculation of visual angle
 % These values are used to calculate noise measures (RMS and BCEA) of
 % fixations. The may be left as is, but don't use the noise measures then.
+% If either or both are empty, the noise measures are provided in pixels
+% instead of degrees.
 opt.scrSz                       = [50.9174 28.6411]; % screen size in cm
 opt.disttoscreen                = 65; % distance to screen in cm.
 
