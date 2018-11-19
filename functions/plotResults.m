@@ -62,6 +62,9 @@ linkaxes([h1 h2],'x');
 %% save and close
 set(hf,'PaperPositionMode','auto');
 drawnow;
-% pause;
-print(filename,'-dpng','-r300');
+if isempty(filename)
+    pause;
+else
+    print(filename,'-dpng','-r300');
+end
 close(hf);
