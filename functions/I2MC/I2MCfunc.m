@@ -110,6 +110,18 @@ end
 %% START ALGORITHM
 
 %% PREPARE INPUT DATA
+% make sure all fields in data are columns
+fs = fieldnames(data);
+for f=1:length(fs)
+    if isstruct(data.(fs{f}))
+        fs2 = fieldnames(data.(fs{f}));
+        for f2=1:length(fs2)
+            data.(fs{f}).(fs2{f2}) = data.(fs{f}).(fs2{f2})(:);
+        end
+    else
+        data.(fs{f}) = data.(fs{f})(:);
+    end
+end
 % deal with monocular data, or create average over two eyes
 if isfield(data,'left') && ~isfield(data,'right')
     xpos = data.left.X;
