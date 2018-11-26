@@ -37,7 +37,7 @@ function [cutoff,fixstart,fixend,starttime,endtime,fixdur,xmedian,ymedian,flankd
 %                               during fixation
 
 %% first determine cutoff for finalweights
-cutoff = nanmean(finalweights) + cutoffstd*nanstd(finalweights);
+cutoff = mean(finalweights,'omitnan') + cutoffstd*std(finalweights,'omitnan');
 
 % get boolean of fixations
 fixbool = finalweights < cutoff;
