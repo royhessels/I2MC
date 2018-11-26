@@ -91,7 +91,7 @@ for p=1:length(missStart)
     for q=1:length(on)
         lesamps = on (q)-[1:edgesamples]+missStart(p)-1;
         resamps = off(q)+[1:edgesamples]+missStart(p)-1;
-        if hypot(nanmedian(xpos(resamps))-nanmedian(xpos(lesamps)), nanmedian(ypos(resamps))-nanmedian(ypos(lesamps))) > maxdisp
+        if hypot(median(xpos(resamps),'omitnan')-median(xpos(lesamps),'omitnan'), median(ypos(resamps),'omitnan')-median(ypos(lesamps),'omitnan')) > maxdisp
             qRemove(p) = true;
             break;
         end

@@ -213,7 +213,7 @@ elseif q2Eyes
     end
     
     %% AVERAGE FINALWEIGHTS OVER COMBINED & SEPARATE EYES
-    data.finalweights = nanmean([finalweights_left finalweights_right],2);
+    data.finalweights = mean([finalweights_left finalweights_right],2,'omitnan');
 end
 
 %% DETERMINE FIXATIONS BASED ON FINALWEIGHTS_AVG
