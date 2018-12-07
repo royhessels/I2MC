@@ -73,7 +73,7 @@ for a=1:length(fstart)
     end
     if ~isempty(pixperdeg)
         % value in degrees visual angle
-        rangeX = rangeX/pixperdeg;
-        rangeY = rangeY/pixperdeg;
+        rangeX(a) = rangeX(a)/pixperdeg;
+        rangeY(a) = rangeY(a)/pixperdeg;
     end
 end
