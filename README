@@ -1,4 +1,4 @@
-The I2MC algorithm was designed to accomplish fixation detection in data across a wide range of noise levels and when periods of data loss may occur.
+The I2MC algorithm was designed to accomplish fixation classification in data across a wide range of noise levels and when periods of data loss may occur.
 
 Cite as:
 Hessels, R.S., Niehorster, D.C., Kemner, C., & Hooge, I.T.C. (2017). Noise-robust fixation detection in eye-movement data - Identification by 2-means clustering (I2MC). Behavior Research Methods, 49(5): 1802–1823.
