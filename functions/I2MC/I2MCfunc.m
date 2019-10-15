@@ -1,7 +1,7 @@
 function [fix,data,par] = I2MCfunc(data,varargin)
-% Hessels, R.S., Niehorster, D.C., Kemner, C., & Hooge, I.T.C., (2016).
+% Hessels, R.S., Niehorster, D.C., Kemner, C., & Hooge, I.T.C., (2017).
 % Noise-robust fixation detection in eye-movement data - Identification by 
-% 2-means clustering (I2MC). Submitted.
+% 2-means clustering (I2MC). Behavior Research Methods, 49(5): 1802--1823.
 
 %% deal with inputs
 % get inputs the user specified and throw them in the parser

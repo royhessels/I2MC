@@ -1,13 +1,13 @@
-%% FIXATION DETECTION USING THE IDENTIFICATION BY 2-MEANS CLUSTERING (I2MC) ALGORITHM
+%% FIXATION CLASSIFICATION USING THE IDENTIFICATION BY 2-MEANS CLUSTERING (I2MC) ALGORITHM
 % Description:
-% The I2MC algorithm was designed to accomplish fixation detection in data
-% across a wide range of noise levels and when periods of data loss may
-% occur.
+% The I2MC algorithm was designed to accomplish fixation classification in
+% data across a wide range of noise levels and when periods of data loss
+% may occur.
 % 
 % Cite as:
 % Hessels, R.S., Niehorster, D.C., Kemner, C., & Hooge, I.T.C., (2017).
 % Noise-robust fixation detection in eye-movement data - Identification by 
-% 2-means clustering (I2MC). Behavior Research Methods, 49(5):1802–1823.
+% 2-means clustering (I2MC). Behavior Research Methods, 49(5): 1802--1823.
 % 
 % Version:
 % v2.0.3
@@ -74,7 +74,7 @@ folders.data                    = 'example data'; % folder in which data is stor
 folders.output                  = 'output'; % folder for output (will use structure in folders.data for saving output)
 
 % Plot results
-do.plots                        = 1; % if set to 1, plot of fixation detection for each trial will be saved as png-file in output folder.
+do.plots                        = 1; % if set to 1, plot of classified fixations for each trial will be saved as png-file in output folder.
 % the figures works best for short trials (up to around 20 seconds)
 
 %% OPTIONAL VARIABLES
@@ -144,7 +144,7 @@ for e = 1:nfold
             continue
         end
         
-        %% RUN FIXATION DETECTION
+        %% RUN FIXATION CLASSIFICATION
         fix          = I2MCfunc(data,opt);
         
         %% PLOT RESULTS

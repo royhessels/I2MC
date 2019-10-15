@@ -19,7 +19,7 @@ function [cutoff,fixstart,fixend,starttime,endtime,fixdur,xmedian,ymedian,flankd
 
 %% output:
 
-% cutoff                    = cutoff used for fixation detection
+% cutoff                    = cutoff used for fixation classification
 % fixstart                  = vector with fixation start indices
 % fixend                    = vector with fixation end indices
 % starttime                 = vector with fixation start times
