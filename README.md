@@ -32,6 +32,6 @@ Quick start guide for adopting this script for your own data:
    data
 4. Run the algorithm
 
-Note: Signal Processing Toolbox is required for the default downsampling procedure. If not available, set opt.downsampFilter to 0. This will use a different downsampling procedure.
+**Note**: _Signal Processing Toolbox_ is required for the default downsampling procedure. If not available, set `opt.downsampFilter` to 0. This will use a different downsampling procedure.
 
 Tested on MATLAB R2012a, R2014b, R2016a, R2017a, & R2019b
