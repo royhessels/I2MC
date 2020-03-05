@@ -10,7 +10,7 @@
 % 2-means clustering (I2MC). Behavior Research Methods, 49(5): 1802--1823.
 % 
 % Version:
-% v2.0.3
+% v2.0.4
 %
 % For more information, questions, or to check whether we have updated to a
 % better version, e-mail: royhessels@gmail.com / dcnieho@gmail.com. I2MC is
@@ -93,9 +93,11 @@ do.plots                        = 1; % if set to 1, plot of classified fixations
 % opt.maxerrors                   = 100;        % maximum number of errors allowed in k-means clustering procedure before proceeding to next file
 % opt.downsamples                 = [2 5 10];
 % opt.downsampFilter              = 0;          % use chebychev filter when downsampling? 1: yes, 0: no. requires signal processing toolbox. is what matlab's downsampling functions do, but could cause trouble (ringing) with the hard edges in eye-movement data
+% opt.chebyOrder                  = 8;          % order of cheby1 Chebyshev downsampling filter, default is normally ok, as long as there are 25 or more samples in the window (you may have less if your data is of low sampling rate or your window is small
 % 
 % % FIXATION DETERMINATION
-% opt.cutoffstd                   = 2; % number of standard deviations above mean k-means weights will be used as fixation cutoff
+% opt.cutoffstd                   = 2;  % number of standard deviations above mean k-means weights will be used as fixation cutoff
+% opt.onoffsetThresh              = 3;  % number of MAD away from median fixation duration. Will be used to walk forward at fixation starts and backward at fixation ends to refine their placement and stop algorithm from eating into saccades
 % opt.maxMergeDist                = 30; % maximum Euclidean distance in pixels between fixations for merging
 % opt.maxMergeTime                = 30; % maximum time in ms between fixations for merging
 % opt.minFixDur                   = 40; % minimum fixation duration after merging, fixations with shorter duration are removed from output
@@ -145,7 +147,7 @@ for e = 1:nfold
         end
         
         %% RUN FIXATION CLASSIFICATION
-        fix          = I2MCfunc(data,opt);
+        [fix,ndata]          = I2MCfunc(data,opt);
         
         %% PLOT RESULTS
         
