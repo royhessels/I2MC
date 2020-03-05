@@ -17,14 +17,16 @@ Quick start guide for adopting this script for your own data:
 1. Build an import function specific for your data (see importTobiiTX300 for an example). 
 
 2. Change line 106 to use your new import function. The format should be:
-
-  data.time for the timestamp
-  data.left.X & data.left.Y for left gaze coordinates
-  data.right.X & data.right.Y for right gaze coordinates
-  data.average.X & data.average.Y for average of right and left gaze coordinates
-
-  You may provide coordinates from both eyes, only the left, only the right, or only the average. 
-  Gaze coordinates should be in pixels, timestamps should be in milliseconds
+    `data.time` for the timestamp
+    
+    `data.left.X` & `data.left.Y` for left gaze coordinates
+    
+    `data.right.X` & `data.right.Y` for right gaze coordinates
+    
+    `data.average.X` & `data.average.Y` for average of right and left gaze coordinates
+    
+    You may provide coordinates from both eyes, only the left, only the right, or only the average. 
+    Gaze coordinates should be in pixels, timestamps should be in milliseconds
 
 3. Adjust the variables in the "necessary variables" section to match your
    data
