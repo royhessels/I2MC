@@ -28,9 +28,11 @@ Quick start guide for adopting this script for your own data:
     You may provide coordinates from both eyes, only the left, only the right, or only the average. 
     Gaze coordinates should be in pixels, timestamps should be in milliseconds
 
-3. Adjust the variables in the "necessary variables" section to match your
-   data
-4. Run the algorithm
+3. Adjust the variables in the "necessary variables" section to match your data
+
+4. Adjust the variables in the "optional variables" section. For data with sampling frequencies > 120Hz, the defaults should be a good starting point. For 120Hz data, we suggest to start with opt.downsamples set to [2 3 5], and opt.chebyOrder to 7. For data with lower frequencies, we suggest to start with  opt.downsampFilter set to 0, opt.downsamples to [2 3], and opt.steptime to 0.
+
+5. Run the algorithm
 
 **Note**: _Signal Processing Toolbox_ is required for the default downsampling procedure. If not available, set `opt.downsampFilter` to 0. This will use a different downsampling procedure.
 
