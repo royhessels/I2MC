@@ -161,7 +161,6 @@ end
 %% INTERPOLATION
 
 % get interpolation windows for average and individual eye signals
-fprintf('Searching for valid interpolation windows\n');
 interpwins   = findInterpWins(xpos, ypos, missing,par.windowtimeInterp,par.edgeSampInterp,par.freq,par.maxdisp);
 if q2Eyes
     llinterpwins = findInterpWins(data.left.X  ,data.left.Y  ,llmiss ,par.windowtimeInterp,par.edgeSampInterp,par.freq,par.maxdisp);
@@ -169,7 +168,6 @@ if q2Eyes
 end
 
 % Use Steffen interpolation and replace values
-fprintf('Replace interpolation windows with Steffen interpolation\n');
 [xpos,ypos,missingn]= windowedInterpolate(xpos, ypos, missing, interpwins,par.edgeSampInterp);
 if q2Eyes
     [llx ,lly ,llmiss]  = windowedInterpolate(data.left.X  ,data.left.Y  ,llmiss ,llinterpwins,par.edgeSampInterp);
@@ -181,34 +179,31 @@ if ~q2Eyes
     %% CALCULATE 2-MEANS CLUSTERING FOR SINGLE EYE
     
     % get kmeans-clustering for averaged signal
-    fprintf('2-Means clustering started for averaged signal \n');
     [data.finalweights,stopped] = twoClusterWeighting(xpos,ypos,missingn,par.downsamples,par.downsampFilter,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
     
     % check whether clustering succeeded
     if stopped
-        fprintf('Clustering stopped after exceeding max errors, continuing to next file \n');
+        fprintf('Clustering stopped after exceeding max errors\n');
         return
     end
     
-    %% CALCULATE 2-MEANS CLUSTERING FOR SEPARATE EYES
 elseif q2Eyes
+    %% CALCULATE 2-MEANS CLUSTERING FOR SEPARATE EYES
     % get kmeans-clustering for left eye signal
-    fprintf('2-Means clustering started for left eye signal \n');
     [finalweights_left,stopped] = twoClusterWeighting(llx,lly,llmiss,par.downsamples,par.downsampFilter,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
     
     % check whether clustering succeeded
     if stopped
-        fprintf('Clustering stopped after exceeding max errors, continuing to next file \n');
+        fprintf('Clustering stopped after exceeding max errors\n');
         return
     end
     
     % get kmeans-clustering for right eye signal
-    fprintf('2-Means clustering started for right eye signal \n');
     [finalweights_right,stopped] = twoClusterWeighting(rrx,rry,rrmiss,par.downsamples,par.downsampFilter,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
     
     % check whether clustering succeeded
     if stopped
-        fprintf('Clustering stopped after exceeding max errors, continuing to next file \n');
+        fprintf('Clustering stopped after exceeding max errors\n');
         return
     end
     
@@ -217,6 +212,5 @@ elseif q2Eyes
 end
 
 %% DETERMINE FIXATIONS BASED ON FINALWEIGHTS_AVG
-fprintf('Determining fixations based on clustering weight mean for averaged signal and separate eyes + 2*std \n')
 [fix.cutoff,fix.start,fix.end,fix.startT,fix.endT,fix.dur,fix.xpos,fix.ypos,fix.flankdataloss,fix.fracinterped] = getFixations(data.finalweights,data.time,xpos,ypos,missing,par.cutoffstd,par.onoffsetThresh,par.maxMergeDist,par.maxMergeTime,par.minFixDur);
 [fix.RMSxy,fix.BCEA,fix.fixRangeX,fix.fixRangeY] = getFixStats(xpos,ypos,missing,fix.start,fix.end,pixperdeg);
