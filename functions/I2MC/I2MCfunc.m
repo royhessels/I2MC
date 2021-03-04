@@ -21,7 +21,7 @@ par.missingy        = [];
 par.scrSz           = [];       % screen size (e.g. in cm). Optional, specify if want fixation statistics in deg
 par.disttoscreen    = [];       % screen distance (in same unit as size). Optional, specify if want fixation statistics in deg
 % parameters with defaults:
-% CUBIC SPLINE INTERPOLATION
+% STEFFEN INTERPOLATION
 par.windowtimeInterp = .1;      % max duration (s) of missing values for interpolation to occur
 par.edgeSampInterp  = 2;        % amount of data (number of samples) at edges needed for interpolation
 par.maxdisp         = [];       % (default value set below if needed) maximum displacement during missing for interpolation to be possible
