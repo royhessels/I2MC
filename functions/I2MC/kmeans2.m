@@ -85,7 +85,7 @@ while true
     moved = nidx ~= previdx;
     if any(moved)
         % Resolve ties in favor of not moving
-        moved(D(moved,1)==D(moved,2)) = false;
+        moved(moved & D(:,1)==D(:,2)) = false;
     end
     if ~any(moved)
         break;
