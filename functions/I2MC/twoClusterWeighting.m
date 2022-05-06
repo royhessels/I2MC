@@ -134,18 +134,19 @@ while eind<=length(xpos)
     
     % detect switches and weight of switch (= 1/number of switches in
     % portion)
-    [switches,switchesw] = deal(cell(1,nd+1));
+    [switches] = deal(cell(1,nd+1));
+    switchesw  = nan(1,nd+1);
     for p=1:nd+1
         switches{p}   = abs(diff(IDL_d{p}));
-        switchesw{p}  = 1/sum(switches{p});
+        switchesw(p)  = 1/sum(switches{p});
     end
     
     % get nearest samples of switch and add weight
-    weighted = [switches{1}*switchesw{1}; 0];
+    weighted = [switches{1}*switchesw(1); 0];
     for p=1:nd
         j = find(switches{p+1})*downsamples(p);
         for o=0:downsamples(p)-1
-            weighted(j+o) = weighted(j+o) + switchesw{p+1};
+            weighted(j+o) = weighted(j+o) + switchesw(p+1);
         end
     end
     
