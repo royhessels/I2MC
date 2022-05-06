@@ -144,7 +144,7 @@ while eind<=length(xpos)
     % get nearest samples of switch and add weight
     weighted = [switches{1}*switchesw(1); 0];
     for p=1:nd
-        j = find(switches{p+1})*downsamples(p);
+        j = idxs{p}(~~switches{p+1});
         for o=0:downsamples(p)-1
             weighted(j+o) = weighted(j+o) + switchesw(p+1);
         end
