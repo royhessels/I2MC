@@ -131,27 +131,33 @@ for p=1:length(starttime)
     end
 end
 
-%% calculate fixation duration
-% if you calculate fixation duration by means of time of last sample during
-% fixation minus time of first sample during fixation (our fixation markers
-% are inclusive), then you always underestimate fixation duration by one
-% sample because you're in practice counting to the beginning of the
-% sample, not the end of it. To solve this, as end time we need to take the
+%% adjust fixation end time
+% since our fixation markers are inclusive, endT is at the end of the sample,
+% not at its start. At this stage in the code, endtime simply reflects the
+% timestamp of the end sample. But such a timestamp is for the beginning of
+% the sample, not for its end. To solve this, as end time we need to take the
 % timestamp of the sample that is one past the last sample of the fixation.
-% so, first calculate fixation duration by simple timestamp subtraction.
-fixdur      = endtime-starttime;
-% then determine what duration of this last sample was
-extratime   = timestamp(min(fixend+1,length(timestamp)))-timestamp(fixend); % make sure we don't run off the end of the data
+% this is also important for calculating fixation duration. Without this
+% adjustment, we would always underestimate fixation duration by one sample
+% because you're in practice counting to the beginning of the sample, not
+% the end of it.
+
+% determine what the duration of each end sample was
+extratime   = timestamp(min(fixend+1,length(timestamp)))-timestamp(fixend); % make sure we don't run off the end of the data 
+
 % if last fixation ends at end of data, we need to determine how long that
 % sample is and add that to the end time. Here we simply guess it as the
 % duration of previous sample
 if ~isempty(fixend) && fixend(end)==length(timestamp)   % first check if there are fixations in the first place, or we'll index into non-existing data
     extratime(end) = diff(timestamp(end-1:end));
 end
-% now add the duration of the end sample to fixation durations, so we have
-% correct fixation durations
-fixdur      = fixdur+extratime;
-
+    
+% now add the duration of the sample to each fixation end time, so that they are
+% correct
+endtime = endtime+extratime;
+    
+%% calculate fixation duration
+fixdur = endtime-starttime;
 
 %% check if any fixations are too short
 qTooShort   = fixdur<minFixDur;
