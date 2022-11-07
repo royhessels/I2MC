@@ -10,7 +10,7 @@
 % 2-means clustering (I2MC). Behavior Research Methods, 49(5): 1802--1823.
 % 
 % Version:
-% v2.0.7
+% v2.1
 %
 % For more information, questions, or to check whether we have updated to a
 % better version, e-mail: royhessels@gmail.com / dcnieho@gmail.com. I2MC is
