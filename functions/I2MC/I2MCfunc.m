@@ -21,6 +21,7 @@ par.missingy        = [];
 par.scrSz           = [];       % screen size (e.g. in cm). Optional, specify if want fixation statistics in deg
 par.disttoscreen    = [];       % screen distance (in same unit as size). Optional, specify if want fixation statistics in deg
 % parameters with defaults:
+par.verbose         = 0;        % if 1: print status output to command window, if 0, silent.
 % STEFFEN INTERPOLATION
 par.windowtimeInterp = .1;      % max duration (s) of missing values for interpolation to occur
 par.edgeSampInterp  = 2;        % amount of data (number of samples) at edges needed for interpolation
@@ -52,7 +53,7 @@ for p=1:2:length(varargin)
     end
     value = varargin{p+1};
     switch key
-        case {'xres','yres','freq','missingx','missingy','disttoscreen','windowtimeInterp','maxdisp','windowtime','steptime','cutoffstd','onoffsetThresh','maxMergeDist','maxMergeTime','minFixDur'}
+        case {'xres','yres','freq','missingx','missingy','disttoscreen','verbose','windowtimeInterp','maxdisp','windowtime','steptime','cutoffstd','onoffsetThresh','maxMergeDist','maxMergeTime','minFixDur'}
             checkNumeric(value,key);
             checkScalar(value,key);
             par.(key) = value;
@@ -129,12 +130,14 @@ if isfield(data,'left') && ~isfield(data,'right')
     missing = isnan(data.left.X) | data.left.X==par.missingx | isnan(data.left.Y) | data.left.Y==par.missingy;
     data.left.missing = missing;
     q2Eyes = false;
+    lbl = 'left eye';
 elseif isfield(data,'right') && ~isfield(data,'left')
     xpos = data.right.X;
     ypos = data.right.Y;
     missing = isnan(data.right.X) | data.right.X==par.missingx | isnan(data.right.Y) | data.right.Y==par.missingy;
     data.right.missing = missing;
     q2Eyes = false;
+    lbl = 'right eye';
 elseif isfield(data,'average')
     xpos = data.average.X;
     ypos = data.average.Y;
@@ -156,11 +159,15 @@ else % we have left and right, average them
     data.left.missing    = llmiss;
     data.right.missing   = rrmiss;
     q2Eyes = true;
+    lbl = 'averaged';
 end
 
 %% INTERPOLATION
 
 % get interpolation windows for average and individual eye signals
+if par.verbose
+    fprintf('Searching for valid interpolation windows\n');
+end
 interpwins   = findInterpWins(xpos, ypos, missing,par.windowtimeInterp,par.edgeSampInterp,par.freq,par.maxdisp);
 if q2Eyes
     llinterpwins = findInterpWins(data.left.X  ,data.left.Y  ,llmiss ,par.windowtimeInterp,par.edgeSampInterp,par.freq,par.maxdisp);
@@ -168,6 +175,9 @@ if q2Eyes
 end
 
 % Use Steffen interpolation and replace values
+if par.verbose
+    fprintf('Replace interpolation windows with Steffen interpolation\n');
+end
 [xpos,ypos,missingn]= windowedInterpolate(xpos, ypos, missing, interpwins,par.edgeSampInterp);
 if q2Eyes
     [llx ,lly ,llmiss]  = windowedInterpolate(data.left.X  ,data.left.Y  ,llmiss ,llinterpwins,par.edgeSampInterp);
@@ -179,6 +189,9 @@ if ~q2Eyes
     %% CALCULATE 2-MEANS CLUSTERING FOR SINGLE EYE
     
     % get kmeans-clustering for averaged signal
+    if par.verbose
+        fprintf('2-Means clustering started for %s signal\n',lbl);
+    end
     [data.finalweights,stopped] = twoClusterWeighting(xpos,ypos,missingn,par.downsamples,par.downsampFilter,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
     
     % check whether clustering succeeded
@@ -190,6 +203,9 @@ if ~q2Eyes
 elseif q2Eyes
     %% CALCULATE 2-MEANS CLUSTERING FOR SEPARATE EYES
     % get kmeans-clustering for left eye signal
+    if par.verbose
+        fprintf('2-Means clustering started for left eye signal \n');
+    end
     [finalweights_left,stopped] = twoClusterWeighting(llx,lly,llmiss,par.downsamples,par.downsampFilter,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
     
     % check whether clustering succeeded
@@ -199,6 +215,9 @@ elseif q2Eyes
     end
     
     % get kmeans-clustering for right eye signal
+    if par.verbose
+        fprintf('2-Means clustering started for right eye signal \n');
+    end
     [finalweights_right,stopped] = twoClusterWeighting(rrx,rry,rrmiss,par.downsamples,par.downsampFilter,par.chebyOrder,par.windowtime,par.steptime,par.freq,par.maxerrors);
     
     % check whether clustering succeeded
@@ -212,5 +231,8 @@ elseif q2Eyes
 end
 
 %% DETERMINE FIXATIONS BASED ON FINALWEIGHTS_AVG
+if par.verbose
+    fprintf('Determining fixations based on clustering weight mean for averaged signal and separate eyes + %.2f*std \n',par.cutoffstd)
+end
 [fix.cutoff,fix.start,fix.end,fix.startT,fix.endT,fix.dur,fix.xpos,fix.ypos,fix.flankdataloss,fix.fracinterped] = getFixations(data.finalweights,data.time,xpos,ypos,missing,par.cutoffstd,par.onoffsetThresh,par.maxMergeDist,par.maxMergeTime,par.minFixDur);
 [fix.RMSxy,fix.BCEA,fix.fixRangeX,fix.fixRangeY] = getFixStats(xpos,ypos,missing,fix.start,fix.end,pixperdeg);
