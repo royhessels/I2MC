@@ -1,3 +1,5 @@
+[![Citation Badge](https://img.shields.io/endpoint?url=https%3A%2F%2Fapi.juleskreuer.eu%2Fcitation-badge.php%3Fshield%26doi%3D10.3758%2Fs13428-016-0822-1&color=blue)](https://scholar.google.com/citations?view_op=view_citation&citation_for_view=uRUYoVgAAAAJ:KlAtU1dfN6UC)
+[![DOI](https://zenodo.org/badge/DOI/10.3758/s13428-016-0822-1.svg)](https://doi.org/10.3758/s13428-016-0822-1)
 # I2MC - MATLAB implementation
 
 ## About I2MC
