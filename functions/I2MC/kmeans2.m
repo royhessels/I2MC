@@ -10,10 +10,9 @@ maxit = 100;
 C(1,:) = X(ceil(end*rand),:);
 
 % Select the rest of the seeds by a probabilistic model
-sampleProbability = (X(:,1) - C(1)).^2 + (X(:,2) - C(2)).^2;
-denominator = sum(sampleProbability);
-sampleProbability = sampleProbability/denominator;
-edges = min([0; cumsum(sampleProbability)],1); % protect against accumulated round-off
+D = (X(:,1) - C(1)).^2 + (X(:,2) - C(2)).^2;
+probs = D/sum(D);
+edges = min([0; cumsum(probs)],1); % protect against accumulated round-off
 edges(end) = 1; % get the upper edge exact
 ps = rand;
 C(2,:) = X(edges(1:end-1)<=ps&ps<edges(2:end),:);
